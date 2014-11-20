@@ -22,7 +22,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
     class Izweb_Import{
         function __construct(){
             add_action( 'init', array( $this, 'init') );
-            add_action( 'wp_enqueue_scripts', array( $this, 'plugin_scripts' ) );
+            add_action( 'admin_print_scripts', array( $this, 'plugin_scripts' ) );
             add_action( 'admin_menu', array( $this, 'admin_menu' ) );
             add_action( 'izw_tab_import', array( $this, 'import_tab_import' ) );
             add_action( 'izw_tab_select-option', array( $this, 'import_tab_select_option' ) );
@@ -57,8 +57,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * Plugin Style And Script
          */
         function plugin_scripts(){
-            //wp_enqueue_style( 'style-name', plugin_dir_url( __FILE__ ) );
-            //wp_enqueue_script( 'script-name', plugin_dir_url( __FILE__ ) . '/js/example.js', array(), '1.0.0', true );
+            wp_enqueue_script( 'izweb-import', plugin_dir_url( __FILE__ )."assets/admin/js/izweb-import.js", array( 'jquery' ) );
         }
 
         /**

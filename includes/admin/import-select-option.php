@@ -9,7 +9,7 @@ $list_option = apply_filters( 'izweb_list_option', $list );
 $list_string = array();
 foreach( $list_option as $row){
     $name = !empty($row->update_name) ? $row->update_name : $row->dom_name;
-    $list_string[] = '<option value="'.$row->id.'">'.$name.'</option>';
+    $list_string[] = '<option value="'.$row->dom_name.'">'.$name.'</option>';
 }
 $list_string = apply_filters( 'izweb_list_string', $list_string );
 $list_string = implode( "", $list_string );
@@ -40,9 +40,10 @@ $list_string = implode( "", $list_string );
     <table class="form-table custom-filed">
         <tbody>
         <tr>
-            <th scope="row"><?php _e( "Post title", __TEXTDOMAIN__ ); ?></th>
+            <th scope="row"><?php _e( "Custom Field", __TEXTDOMAIN__ ); ?></th>
             <td>
-                <select name="post_title">
+                <select name="cusom_field[]">
+                    <option value="">Select Field</option>
                     <?php echo $list_string; ?>
                 </select>
             </td>
