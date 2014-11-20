@@ -13,11 +13,29 @@ foreach( $list_option as $row){
 }
 $list_string = apply_filters( 'izweb_list_string', $list_string );
 $list_string = implode( "", $list_string );
+// Process Import
+if( isset( $_POST['hh_import'] ) ){
+
+}
 // Set Settings To Import
 ?>
 <form name="import-file" action="" method="post" enctype="multipart/form-data">
     <table class="form-table">
         <tbody>
+        <tr>
+            <th scope="row"><?php _e( "Post type", __TEXTDOMAIN__ ); ?></th>
+            <td>
+                <select name="post_type">
+                    <?php
+                    $post_types = get_post_types( '', 'names' );
+
+                    foreach ( $post_types as $post_type ) {
+
+                        echo '<option value="'.$post_type.'">'.$post_type.'</option>';
+                    } ?>
+                </select>
+            </td>
+        </tr>
         <tr>
             <th scope="row"><?php _e( "Post title", __TEXTDOMAIN__ ); ?></th>
             <td>
