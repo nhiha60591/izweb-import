@@ -4,6 +4,8 @@
             do_action( 'izweb_update_custom_field', $_POST );
             $option = array_filter( $_POST['field-item'] );
             update_option( 'izweb_custom_fields', $option );
+            update_option( 'izweb_import_title', $_POST['post_title'] );
+            update_option( 'izweb_import_content', $_POST['post_content'] );
         }
     ?>
     <?php do_action( 'izweb_before_setting_page'); ?>
@@ -59,6 +61,7 @@
                             </td>
                         </tr>
                         <?php
+                        $i++;
                     }
                 }
             ?>
@@ -67,14 +70,18 @@
         <div class="more-fields">
             <h2><?php _e( "More fields", __TEXTDOMAIN__ ); ?></h2>
             <table class="form-table">
+                <?php
+                $post_title = get_option( 'izweb_import_title' );
+                $post_content = get_option( 'izweb_import_content' );
+                ?>
                 <tbody>
                     <tr>
                         <th><label form="post_title"><?php _e( "Post title", __TEXTDOMAIN__ ); ?></label></th>
-                        <td><input type="text" name="post_title"></td>
+                        <td><input type="text" name="post_title" id="post_title" value="<?php echo @$post_title; ?>"></td>
                     </tr>
                     <tr>
-                        <th><label form="post_title"><?php _e( "Post content", __TEXTDOMAIN__ ); ?></label></th>
-                        <td><input type="text" name="post_content"></td>
+                        <th><label form="post_content"><?php _e( "Post content", __TEXTDOMAIN__ ); ?></label></th>
+                        <td><input type="text" name="post_content" id="post_content" value="<?php echo @$post_content; ?>"></td>
                     </tr>
                 </tbody>
             </table>

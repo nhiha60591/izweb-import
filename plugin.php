@@ -28,6 +28,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             add_action( 'izw_tab_select-option', array( $this, 'import_tab_select_option' ) );
             add_action( 'wp_ajax_load_same_data', array( $this, 'load_same_data' ) );
             add_action( 'wp_ajax_nopriv_load_same_data', array( $this, 'load_same_data' ) );
+            add_action( 'izweb_before_setting_page', array( $this, 'process_import' ) );
 
             register_activation_hook( __FILE__, array( $this, 'install' ) );
             register_deactivation_hook( __FILE__, array( $this, 'uninstall' ) );
@@ -153,6 +154,11 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
         function load_same_data(){
             print_r( $_FILES['same_file'] );
             die();
+        }
+        function process_import(){
+            if( isset( $_POST['izw-import'] ) ){
+
+            }
         }
 
     }
