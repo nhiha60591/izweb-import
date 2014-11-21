@@ -26,6 +26,12 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             add_action( 'admin_menu', array( $this, 'admin_menu' ) );
             add_action( 'izw_tab_import', array( $this, 'import_tab_import' ) );
             add_action( 'izw_tab_select-option', array( $this, 'import_tab_select_option' ) );
+            add_action( 'wp_ajax_load_same_data', array( $this, 'load_same_data' ) );
+            add_action( 'wp_ajax_nopriv_load_same_data', array( $this, 'load_same_data' ) );
+
+            register_activation_hook( __FILE__, array( $this, 'install' ) );
+            register_deactivation_hook( __FILE__, array( $this, 'uninstall' ) );
+
         }
 
         /**
@@ -34,6 +40,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
         function init(){
             $this->defines();
             $this->includes();
+            $this->register_post_type();
         }
 
         /**
@@ -58,21 +65,22 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          */
         function plugin_scripts(){
             wp_enqueue_script( 'izweb-import', plugin_dir_url( __FILE__ )."assets/admin/js/izweb-import.js", array( 'jquery' ) );
+            wp_enqueue_style( 'izweb-import', plugin_dir_url( __FILE__ )."assets/admin/css/style.css" );
         }
 
         /**
          * Admin Menu
          */
         function admin_menu(){
-            add_menu_page( __( 'Import Settings', __TEXTDOMAIN__ ), __( 'Import Settings', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import', array( $this, 'setting_page' ), '', 6 );
-            add_submenu_page( 'izweb-import', __( 'Import File', __TEXTDOMAIN__ ), __( 'Import File', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-file', array( $this, 'import_page' ) );
+            add_submenu_page( 'edit.php?post_type=program', __( 'Import Settings', __TEXTDOMAIN__ ), __( 'Import Settings', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-setting', array( $this, 'import_page' ));
+            add_submenu_page( 'edit.php?post_type=program', __( 'Select fields', __TEXTDOMAIN__ ), __( 'Select fields', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-fields', array( $this, 'setting_page' ) );
         }
 
         /**
          * Display Main Setting Page
          */
         function setting_page(){
-            include "includes/admin/setting-page.php";
+            include "includes/admin/setting-fields-page.php";
         }
 
         /**
@@ -95,6 +103,58 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
         function import_tab_select_option(){
             include "includes/admin/import-select-option.php";
         }
+        /**
+         * Register Post Type Program
+         */
+        function register_post_type(){
+            do_action( 'izweb_before_register_post_type' );
+            $labels = array(
+                'name'               => _x( 'Programs', 'post type general name', 'your-plugin-textdomain' ),
+                'singular_name'      => _x( 'Program', 'post type singular name', 'your-plugin-textdomain' ),
+                'menu_name'          => _x( 'Programs', 'admin menu', 'your-plugin-textdomain' ),
+                'name_admin_bar'     => _x( 'Program', 'add new on admin bar', 'your-plugin-textdomain' ),
+                'add_new'            => _x( 'Add New', 'book', 'your-plugin-textdomain' ),
+                'add_new_item'       => __( 'Add New Program', 'your-plugin-textdomain' ),
+                'new_item'           => __( 'New Program', 'your-plugin-textdomain' ),
+                'edit_item'          => __( 'Edit Program', 'your-plugin-textdomain' ),
+                'view_item'          => __( 'View Program', 'your-plugin-textdomain' ),
+                'all_items'          => __( 'All Programs', 'your-plugin-textdomain' ),
+                'search_items'       => __( 'Search Programs', 'your-plugin-textdomain' ),
+                'parent_item_colon'  => __( 'Parent Programs:', 'your-plugin-textdomain' ),
+                'not_found'          => __( 'No Programs found.', 'your-plugin-textdomain' ),
+                'not_found_in_trash' => __( 'No Programs found in Trash.', 'your-plugin-textdomain' )
+            );
+
+            $args = array(
+                'labels'             => $labels,
+                'public'             => true,
+                'publicly_queryable' => true,
+                'show_ui'            => true,
+                'show_in_menu'       => true,
+                'query_var'          => true,
+                'rewrite'            => array( 'slug' => 'program' ),
+                'capability_type'    => 'post',
+                'has_archive'        => true,
+                'hierarchical'       => false,
+                'menu_position'      => null,
+                'supports'           => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' )
+            );
+
+            register_post_type( 'program', apply_filters( 'izweb_register_post_type_program', $args ) );
+            do_action( 'izweb_after_register_post_type' );
+        }
+
+        function install(){
+
+        }
+        function uninstall(){
+
+        }
+        function load_same_data(){
+            print_r( $_FILES['same_file'] );
+            die();
+        }
+
     }
     new Izweb_Import();
 endif;
