@@ -50,14 +50,14 @@
                         ?>
                         <tr class="<?php echo $class; ?>">
                             <th scope="row" class="check-column">
-                                <input id="cb-select-<?php echo $i; ?>" type="checkbox" name="post[]" value="1">
+                                <input id="cb-select-<?php echo $i; ?>" type="checkbox" value="1">
                                 <div class="locked-indicator"></div>
                             </th>
                             <td>
-                                <input type="text" name="field-item[]" value="<?php echo $row; ?>" />
+                                <input type="text" name="field-item[<?php echo $row; ?>]" value="<?php echo $row; ?>" />
                             </td>
                             <td>
-
+                                <?php echo get_same_data( $row ); ?>
                             </td>
                         </tr>
                         <?php

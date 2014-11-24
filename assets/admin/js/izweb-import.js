@@ -18,7 +18,7 @@ jQuery(document).ready(function ($) {
         ht_lenght = ht_lenght +1;
         var html = '<tr class="'+ ht_class +'">\
             <th scope="row" class="check-column">\
-            <input id="cb-select-'+ht_lenght+'" type="checkbox" name="post[]" value="1">\
+            <input id="cb-select-'+ht_lenght+'" type="checkbox" value="1">\
                 <div class="locked-indicator"></div>\
             </th>\
             <td>\

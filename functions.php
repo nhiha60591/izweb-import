@@ -95,3 +95,24 @@ function insert_data_option(){
     }
 }
 add_action( 'izweb_before_import_page', 'insert_data_option');
+function get_same_data( $meta_key = '' ){
+    global $wpdb;
+    $content = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->postmeta} WHERE `meta_key` = '{$meta_key}'");
+    return $content;
+}
+function _substr($str, $length, $minword = 3)
+{
+    $sub = '';
+    $len = 0;
+    foreach (explode(' ', $str) as $word)
+    {
+        $part = (($sub != '') ? ' ' : '') . $word;
+        $sub .= $part;
+        $len += strlen($part);
+        if (strlen($word) > $minword && strlen($sub) >= $length)
+        {
+            break;
+        }
+    }
+    return $sub . (($len < strlen($str)) ? '...' : '');
+}

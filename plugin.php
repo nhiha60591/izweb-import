@@ -49,6 +49,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          */
         function includes(){
             require_once( "functions.php" );
+            require_once( "includes/admin/short-codes.php" );
         }
 
         /**
@@ -138,7 +139,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                 'has_archive'        => true,
                 'hierarchical'       => false,
                 'menu_position'      => null,
-                'supports'           => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' )
+                'supports'           => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments', 'custom-fields', 'post-formats' )
             );
 
             register_post_type( 'program', apply_filters( 'izweb_register_post_type_program', $args ) );
@@ -156,8 +157,84 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             die();
         }
         function process_import(){
+            $current_user = wp_get_current_user();
             if( isset( $_POST['izw-import'] ) ){
+                do_action( "izweb_before_process_import", $_POST );
+                // Set file type allow
+                $format_allows = array(
+                    'type' => array( 'zip', 'xml' )
+                );
+                $format_allows = apply_filters( 'izweb_file_format_allow', $format_allows, $_POST );
 
+                if( !empty( $_FILES['file-import']['name'] ) ){
+                    $error = new WP_Error();
+                    // Check file type
+                    $filename = $_FILES['file-import']['name'];
+                    $folder =  __IZIPPATH__."/uploads";
+                    $ext = pathinfo($filename, PATHINFO_EXTENSION);
+                    if(!in_array($ext,$format_allows['type']) ) {
+                        $error->add( 'file_type', __( "Sorry, only <strong>".implode(" ,", $format_allows['type'])."</strong> files are allowed", __TEXTDOMAIN__ ) );
+                    }
+                    // Check file size
+                    if ($_FILES["file-import"]["size"] > 500000) {
+                        $error->add( 'file_size', __( "Sorry, your file is too large", __TEXTDOMAIN__ ) );
+                    }
+                    if( sizeof( $error->get_error_codes() ) > 0){
+                        foreach( $error->get_error_messages() as $mes ){
+                            echo '<div class="error">'.$mes.'</div>';
+                        }
+                    }else{
+                        // Create Directory
+                        if( !file_exists( $folder ) ){
+                            mkdir($folder, 0777, true);
+                        }
+                        // Upload file to server
+                        move_uploaded_file($_FILES["file-import"]["tmp_name"], $folder."/".basename($_FILES["file-import"]["name"]));
+                        // Read zip first
+                        $zip = new ZipArchive();
+                        $x = $zip->open( $folder . "/".basename($_FILES["file-import"]["name"]));
+                        if($x === true) {
+                            global $wpdb;
+                            $table = $wpdb->prefix."izweb_import";
+                            $zip->extractTo($folder);
+                            $zip->close();
+                            unlink($folder."/".basename($_FILES["file-import"]["name"]));
+                            $handle = opendir($folder);
+                            $i=0;
+                            while ($f = readdir($handle)) {
+                                if ($f != "." && $f != "..") {
+                                    $doc = new DOMDocument();
+                                    $doc->load( $folder."/".$f );
+                                    $custom_fields = get_option( 'izweb_custom_fields' );
+                                    $post_title = get_option( 'izweb_import_title' );
+                                    $post_content = get_option( 'izweb_import_content' );
+                                    if( !empty( $custom_fields ) && is_array( $custom_fields ) && !empty($post_title) && !empty( $post_content ) ){
+                                        $defaults = array(
+                                            'post_status'           => 'publish',
+                                            'post_type'             => 'program',
+                                            'post_author'           => $current_user->ID,
+                                            'ping_status'           => get_option('default_ping_status'),
+                                            'post_title'            => $doc->getElementsByTagName( $post_title )->item(0)->nodeValue,
+                                            'post_content'          => $doc->getElementsByTagName( $post_content )->item(0)->nodeValue
+                                        );
+                                        $defaults = apply_filters( 'izweb_insert_arg_default', $defaults );
+                                        $postid = wp_insert_post( $defaults );
+                                        if( $postid ){
+                                            foreach( $custom_fields as $field){
+                                                update_post_meta( $postid, $field, $doc->getElementsByTagName( $field )->item(0)->nodeValue );
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            //wp_redirect( add_query_arg( array( 'page' => 'izweb-import-file', 'tab' => 'select-option' ), admin_url('admin.php') ) );
+                            exit();
+                        } else {
+                            die("There was a problem. Please try again!");
+                        }
+                    }
+                }
+                do_action( "izweb_after_process_import" );
             }
         }
 
