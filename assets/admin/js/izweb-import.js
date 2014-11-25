@@ -24,8 +24,9 @@ jQuery(document).ready(function ($) {
             <td>\
             <input type="text" name="field-item[]" />\
             </td>\
+            <td><input type="text" name="field-caption[]" /></td>\
             <td>\
-\
+            \
             </td>\
         </tr>';
         $('#form-custom-fields tbody').append(html);

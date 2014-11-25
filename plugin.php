@@ -29,6 +29,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             add_action( 'wp_ajax_load_same_data', array( $this, 'load_same_data' ) );
             add_action( 'wp_ajax_nopriv_load_same_data', array( $this, 'load_same_data' ) );
             add_action( 'izweb_before_setting_page', array( $this, 'process_import' ) );
+            add_filter( 'template_include', array( $this, 'template_include' ), 99 );
 
             register_activation_hook( __FILE__, array( $this, 'install' ) );
             register_deactivation_hook( __FILE__, array( $this, 'uninstall' ) );
@@ -146,16 +147,23 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             do_action( 'izweb_after_register_post_type' );
         }
 
+        /**
+         * Install Plugin
+         */
         function install(){
 
         }
+
+        /**
+         * Uninstall Plugin
+         */
         function uninstall(){
 
         }
-        function load_same_data(){
-            print_r( $_FILES['same_file'] );
-            die();
-        }
+
+        /**
+         * Process Import
+         */
         function process_import(){
             $current_user = wp_get_current_user();
             if( isset( $_POST['izw-import'] ) ){
@@ -225,8 +233,10 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                                             }
                                         }
                                     }
+                                    unlink( $folder."/".$f );
                                 }
                             }
+                            echo "<h2>".__( "Import successfully", __TEXTDOMAIN__) .". </h2>";
                             //wp_redirect( add_query_arg( array( 'page' => 'izweb-import-file', 'tab' => 'select-option' ), admin_url('admin.php') ) );
                             exit();
                         } else {
@@ -238,6 +248,34 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             }
         }
 
+        /**
+         * Include Template Program
+         *
+         * @param $template
+         * @return string
+         */
+
+        function template_include( $template ) {
+
+            if ( is_post_type_archive( 'program' )  ) {
+                $new_template = locate_template( array( 'archive-program.php' ) );
+                if ( '' != $new_template ) {
+                    return $new_template;
+                }else{
+                    return plugin_dir_path(__FILE__)."templates/archive-program.php";
+                }
+            }
+            if( is_singular( 'program' ) ){
+                $new_template = locate_template( array( 'single-program.php' ) );
+                if ( '' != $new_template ) {
+                    return $new_template;
+                }else{
+                    return plugin_dir_path(__FILE__)."templates/single-program.php";
+                }
+            }
+
+            return $template;
+        }
     }
     new Izweb_Import();
 endif;
