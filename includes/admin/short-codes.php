@@ -53,7 +53,7 @@ function hh_search_program( $atts ){
             <div class="izweb-search-results">
                 <?php while($program->have_posts()): $program->the_post(); ?>
                     <div class="izweb-item">
-                        <div class="post-title"><h2><?php echo _substr(get_the_title(), 30); ?></h2><a class="izw-detail" href="<?php the_permalink(); ?>">Detail</a></div>
+                        <div class="post-title"><a class="izw-title-link" href="<?php the_permalink(); ?>"><?php echo _substr(get_the_title(), 50); ?></a><a class="izw-detail" href="<?php the_permalink(); ?>">Detail</a></div>
                         <div class="post-content">
                             <?php do_action( 'izweb_before_search_content', get_the_ID() ); ?>
                             <?php the_excerpt(); ?>

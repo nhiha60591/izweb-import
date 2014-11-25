@@ -1,0 +1,45 @@
+.post-title {
+    float: left;
+    width: 100%;
+}
+.entry-content .post-title a.izw-title-link {
+    background: url("../images/title-icon.png") left center no-repeat;
+    padding-left: 40px;
+}
+.entry-content .post-title  a.izw-title-link, .entry-content .post-title a.izw-title-link:visited {
+    font-weight: 600;
+    font-size: 1.4em;
+    color: #27cbc0;
+    text-decoration: none;
+}
+.entry-content .post-title  a.izw-detail {
+    float: right;
+    text-decoration: none;
+    background: #27cbc0;
+    line-height: 40px;
+    padding: 0 10px;
+    color: white;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+.entry-content .post-title a.izw-title-link:hover, .entry-content .post-title a.izw-detail:hover{
+    color: #c7c7c7;
+}
+ul.izw-list-field {
+    width: 100%;
+    float: left;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.izweb-list-fields ul li {
+    margin: 0;
+    padding: 0;
+    width: 50%;
+    display: inline-block;
+}
+.izweb-list-fields ul li label {
+    font-weight: 600;
+    display: inline-block;
+    width: 25%;
+}
