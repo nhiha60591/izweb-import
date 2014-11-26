@@ -44,6 +44,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             $this->defines();
             $this->includes();
             $this->register_post_type();
+            $this->load_plugin_textdomain();
         }
 
         /**
@@ -283,6 +284,35 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             }
 
             return $template;
+        }
+
+        /**
+         * Load plugin textdomain
+         */
+        public function load_plugin_textdomain() {
+            $locale = apply_filters( 'plugin_locale', get_locale(), 'izweb-import' );
+            $dir    = trailingslashit( WP_LANG_DIR );
+
+            /**
+             * Admin Locale. Looks in:
+             *
+             * 		- WP_LANG_DIR/woocommerce/woocommerce-admin-LOCALE.mo
+             * 		- WP_LANG_DIR/plugins/woocommerce-admin-LOCALE.mo
+             */
+            if ( is_admin() ) {
+                load_textdomain( 'woocommerce', $dir . 'izweb-import/izweb-import-admin-' . $locale . '.mo' );
+                load_textdomain( 'woocommerce', $dir . 'plugins/izweb-import-admin-' . $locale . '.mo' );
+            }
+
+            /**
+             * Frontend/global Locale. Looks in:
+             *
+             * 		- WP_LANG_DIR/woocommerce/woocommerce-LOCALE.mo
+             * 	 	- woocommerce/i18n/languages/woocommerce-LOCALE.mo (which if not found falls back to:)
+             * 	 	- WP_LANG_DIR/plugins/woocommerce-LOCALE.mo
+             */
+            load_textdomain( 'izweb-import', $dir . 'izweb-import/izweb-import-' . $locale . '.mo' );
+            load_plugin_textdomain( 'izweb-import', false, plugin_basename( dirname( __FILE__ ) ) . "/languages" );
         }
     }
     new Izweb_Import();

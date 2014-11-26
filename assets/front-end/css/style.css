@@ -2,17 +2,17 @@
     float: left;
     width: 100%;
 }
-.entry-content .post-title a.izw-title-link {
+.post-title a.izw-title-link {
     background: url("../images/title-icon.png") left center no-repeat;
     padding-left: 40px;
 }
-.entry-content .post-title  a.izw-title-link, .entry-content .post-title a.izw-title-link:visited {
+.post-title  a.izw-title-link, .entry-content .post-title a.izw-title-link:visited {
     font-weight: 600;
     font-size: 1.4em;
     color: #27cbc0;
     text-decoration: none;
 }
-.entry-content .post-title  a.izw-detail {
+.post-title  a.izw-detail {
     float: right;
     text-decoration: none;
     background: #27cbc0;
@@ -22,7 +22,7 @@
     text-transform: uppercase;
     font-weight: bold;
 }
-.entry-content .post-title a.izw-title-link:hover, .entry-content .post-title a.izw-detail:hover{
+.post-title a.izw-title-link:hover,.post-title a.izw-detail:hover{
     color: #c7c7c7;
 }
 ul.izw-list-field {
@@ -42,4 +42,24 @@ ul.izw-list-field {
     font-weight: 600;
     display: inline-block;
     width: 25%;
+}
+.alr{
+    text-align: right;
+}
+.izw-left {
+    width: 50%;
+    margin: 0;
+    display: inline-block;
+    padding: 0;
+}
+.izw-right {
+    display: inline-block;
+    width: 49%;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+}
+#izweb-search input[type="text"] {
+    width: auto;
+    min-width: 38%;
 }
