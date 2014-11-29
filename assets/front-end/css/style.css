@@ -1,18 +1,18 @@
-.post-title {
+.izweb-item .post-title {
     float: left;
     width: 100%;
 }
-.post-title a.izw-title-link {
+.izweb-item .post-title a.izw-title-link {
     background: url("../images/title-icon.png") left center no-repeat;
     padding-left: 40px;
 }
-.post-title  a.izw-title-link, .entry-content .post-title a.izw-title-link:visited {
+.izweb-item .post-title  a.izw-title-link,.izweb-item .post-title a.izw-title-link:visited {
     font-weight: 600;
     font-size: 1.4em;
     color: #27cbc0;
     text-decoration: none;
 }
-.post-title  a.izw-detail {
+.izweb-item .post-title  a.izw-detail {
     float: right;
     text-decoration: none;
     background: #27cbc0;
@@ -22,37 +22,47 @@
     text-transform: uppercase;
     font-weight: bold;
 }
-.post-title a.izw-title-link:hover,.post-title a.izw-detail:hover{
-    color: #c7c7c7;
+.izweb-item .post-title a.izw-title-link:hover,.izweb-item .post-title a.izw-detail:hover{
+    color: #FFFFFF;
+    background: #0da9a0;
 }
-ul.izw-list-field {
+.izweb-item .post-content{
+    padding: 0;
+    padding-left: 40px;
+}
+.izweb-item .post-content ul.izw-list-field{
+    margin: 0;
+}
+.izweb-item ul.izw-list-field {
     width: 100%;
     float: left;
     list-style: none;
     margin: 0;
     padding: 0;
 }
-.izweb-list-fields ul li {
+.izweb-item .izweb-list-fields ul li {
     margin: 0;
     padding: 0;
     width: 50%;
     display: inline-block;
 }
-.izweb-list-fields ul li label {
+.izweb-item .izweb-list-fields ul li label {
     font-weight: 600;
     display: inline-block;
-    width: 25%;
+    width: 22%;
+    padding: 0;
+    margin: 0;
 }
-.alr{
+.izweb-item .alr{
     text-align: right;
 }
-.izw-left {
+.izweb-item .izw-left {
     width: 50%;
     margin: 0;
     display: inline-block;
     padding: 0;
 }
-.izw-right {
+.izweb-item .izw-right {
     display: inline-block;
     width: 49%;
     margin: 0;
@@ -62,4 +72,46 @@ ul.izw-list-field {
 #izweb-search input[type="text"] {
     width: auto;
     min-width: 38%;
+}
+.izweb .widget .izweb-list-fields ul li{
+    width: 100%;
+}
+.izweb .widget .izweb-list-fields ul li label{
+    width: auto;
+}
+#sidebar.izweb .widget h4,#sidebar.izweb .widget h4 a{
+    line-height: 50px;
+    padding: 0px 10px;
+    color: #FFF;
+    text-decoration: none;
+    clear: both;
+}
+#sidebar.izweb .widget h4.izw-blue{
+    background: #27cbc0;
+}
+#sidebar.izweb .widget h4.izw-orange{
+    background: #ff5d52;
+}
+.izweb-item {
+    width: 100%;
+    float: left;
+    margin-bottom: 30px;
+}
+.izweb-item.include{
+    display: none;
+}
+.izweb-item.include .post-title a.izw-title-link {
+    background: url("../images/title-icon-orange.png") left center no-repeat;
+    padding-left: 40px;
+}
+
+.izweb-item.include .post-title a.izw-title-link:hover,.izweb-item.include .post-title a.izw-detail:hover{
+    color: #FFFFFF;
+    background: #cc4437;
+}
+.izweb-item.include .post-title  a.izw-detail {
+    background: #ff5c4c;
+}
+.izweb-item.include .post-title  a.izw-title-link,.izweb-item.include .post-title a.izw-title-link:visited {
+    color: #ff5c4c;
 }

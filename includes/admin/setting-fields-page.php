@@ -92,7 +92,7 @@
                     </tr>
                     <tr>
                         <th><label form="post_content"><?php _e( "Post content", __TEXTDOMAIN__ ); ?></label></th>
-                        <td><input type="text" name="post_content" id="post_content" value="<?php echo @$post_content; ?>"></td>
+                        <td><textarea name="post_content" cols="40" rows="8" id="post_content"><?php echo @$post_content; ?></textarea></td>
                     </tr>
                     <?php do_action( 'izweb_after_main_fields' ); ?>
                 </tbody>

@@ -68,7 +68,7 @@ function izweb_show_custom_field( $post_id ){
         echo '<div class="izweb-list-fields"><ul class="izw-list-field">';
         foreach( $options as $option ){
             $val = get_post_meta( $post_id, $option, true );
-            echo '<li><label>'.$caption[$i].': </label>'.$val.'</li>';
+            echo '<li><label>'.$caption[$i].': </label>'.trim($val).'</li>';
             $i++;
         }
         echo "</ul></div>";
