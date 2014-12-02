@@ -33,6 +33,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             add_filter( 'template_include', array( $this, 'template_include' ), 99 );
             add_action( 'widgets_init', array( $this, 'plugin_widgets_init' ) );
             add_action( 'init', array( $this, 'register_taxonomy' ) );
+            add_filter( 'the_content', array( $this, 'change_content' ), 999 );
 
             register_activation_hook( __FILE__, array( $this, 'install' ) );
             register_deactivation_hook( __FILE__, array( $this, 'uninstall' ) );
@@ -90,6 +91,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
         function admin_menu(){
             add_submenu_page( 'edit.php?post_type=program', __( 'Import Settings', __TEXTDOMAIN__ ), __( 'Import Settings', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-setting', array( $this, 'import_page' ));
             add_submenu_page( 'edit.php?post_type=program', __( 'Select fields', __TEXTDOMAIN__ ), __( 'Select fields', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-fields', array( $this, 'setting_page' ) );
+            add_submenu_page( 'edit.php?post_type=program', __( 'Remove posts', __TEXTDOMAIN__ ), __( 'Remove posts', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-remove-posts', array( $this, 'remove_posts_page' ) );
         }
 
         /**
@@ -199,7 +201,18 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * Install Plugin
          */
         function install(){
-
+            global $wpdb;
+            $table = $wpdb->prefix.'remove_posts';
+            $SQL = "CREATE TABLE IF NOT EXISTS `{$table}` (
+                      `ID` int(11) NOT NULL AUTO_INCREMENT,
+                      `date_import` datetime NOT NULL,
+                      `type` int(11) NOT NULL,
+                      `amount` int(11) NOT NULL,
+                      `status` int(11) NOT NULL,
+                      PRIMARY KEY (`ID`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
+            require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+            dbDelta( $SQL );
         }
 
         /**
@@ -213,6 +226,8 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * Process Import
          */
         function process_import(){
+            global $wpdb;
+            $table = $wpdb->prefix.'remove_posts';
             $current_user = wp_get_current_user();
             if( isset( $_POST['izw-remove-all-posts'] ) ){
                 $args = array(
@@ -231,6 +246,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                 $custom_fields = get_option( 'izweb_custom_fields' );
                 $post_title = get_option( 'izweb_import_title' );
                 $post_content = get_option( 'izweb_import_content' );
+                $post_excerpt = get_option( 'izweb_post_excerpt' );
                 $post_content_array =  explode(PHP_EOL, $post_content) ;
                 do_action( "izweb_before_process_import", $_POST );
                 // Set file type allow
@@ -267,8 +283,6 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                         $zip = new ZipArchive();
                         $x = $zip->open( $folder . "/".basename($_FILES["file-import"]["name"]));
                         if($x === true) {
-                            global $wpdb;
-                            $table = $wpdb->prefix."izweb_import";
                             $zip->extractTo($folder);
                             $zip->close();
                             unlink($folder."/".basename($_FILES["file-import"]["name"]));
@@ -281,28 +295,34 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                                     if( !empty( $custom_fields ) && is_array( $custom_fields ) && !empty($post_title) && !empty( $post_content ) ){
                                         $content = '';
                                         foreach($post_content_array as $row){
-                                            $content .= $doc->getElementsByTagName( $row )->item(0)->nodeValue;
+                                            $content .= trim( $doc->getElementsByTagName( $row )->item(0)->nodeValue );
                                         }
                                         $defaults = array(
                                             'post_status'           => 'publish',
                                             'post_type'             => 'program',
+                                            'post_excerpt'          => trim( $doc->getElementsByTagName( $post_excerpt )->item(0)->nodeValue ),
                                             'post_author'           => $current_user->ID,
                                             'ping_status'           => get_option('default_ping_status'),
-                                            'post_title'            => $doc->getElementsByTagName( $post_title )->item(0)->nodeValue,
+                                            'post_title'            => trim( $doc->getElementsByTagName( $post_title )->item(0)->nodeValue ),
                                             'post_content'          => $content
                                         );
                                         $defaults = apply_filters( 'izweb_insert_arg_default', $defaults );
                                         $postid = wp_insert_post( $defaults );
                                         wp_set_post_terms( $postid, array( (int)$_POST['cat'] ), 'program_cat' );
                                         if( $postid ){
+                                            $i++;
                                             foreach( $custom_fields as $field){
-                                                update_post_meta( $postid, $field, $doc->getElementsByTagName( $field )->item(0)->nodeValue );
+                                                update_post_meta( $postid, $field, trim(  $doc->getElementsByTagName( $field )->item(0)->nodeValue ) );
+                                            }
+                                            foreach($post_content_array as $row){
+                                                update_post_meta( $postid, $row, trim( $doc->getElementsByTagName( $row )->item(0)->nodeValue ) );
                                             }
                                         }
                                     }
                                     unlink( $folder."/".$f );
                                 }
                             }
+                            $wpdb->insert( $table, array('date_import'=> date( 'Y-m-d H:i:s' ), 'type' => $_POST['cat'], 'status' => 0,'amount' => $i ) );
                             echo "<h2>".__( "Import successfully", __TEXTDOMAIN__) .". </h2>";
                             //wp_redirect( add_query_arg( array( 'page' => 'izweb-import-file', 'tab' => 'select-option' ), admin_url('admin.php') ) );
                             exit();
@@ -387,6 +407,29 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                 'before_title' => '<h1>',
                 'after_title' => '</h1>',
             ) );
+        }
+        function change_content( $content ){
+            if ( is_singular('program') ){
+                global $post;
+                $content = '';
+                $post_content = get_option( 'izweb_import_content' );
+                $post_content_array =  explode(PHP_EOL, $post_content) ;
+                $parray = array();
+                foreach( $post_content_array as $row){
+                    $parray[] = array( 'key' => $row, 'caption' => $row );
+                }
+                $parray = apply_filters( 'izweb_list_content_fields', $parray );
+                foreach($parray as $row){
+                    $content .= '<div class="izweb-content izweb-'.$row['key'].'"><label>'.$row['caption'].'</label><div class="izweb-post-text">'.get_post_meta( $post->ID, $row['key'], true ).'</div></div>';
+                }
+            }
+            return $content;
+        }
+        /**
+         * Display Remove Posts
+         */
+        function remove_posts_page(){
+             include "includes/admin/remove-posts-page.php";
         }
     }
     new Izweb_Import();

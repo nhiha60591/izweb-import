@@ -67,8 +67,14 @@ function izweb_show_custom_field( $post_id ){
         $i=0;
         echo '<div class="izweb-list-fields"><ul class="izw-list-field">';
         foreach( $options as $option ){
-            $val = get_post_meta( $post_id, $option, true );
-            echo '<li><label>'.$caption[$i].': </label>'.trim($val).'</li>';
+            $val = get_post_meta( $post_id, $option );
+			
+			if ($option == 'location_countries') {
+				
+				$multi = explode("\n", $val[0]);
+				if (is_array($multi)) $val = $multi;
+			}
+            echo '<li><label>'.$caption[$i].': </label>'. implode( ",", $val ).'</li>';
             $i++;
         }
         echo "</ul></div>";

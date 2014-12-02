@@ -133,7 +133,7 @@ $blog_type = $options['blog_type'];
                     </div>
                     <h4 class="izw-orange">&laquo;<a href="javascript: history.go(-1)" >Back to search</a></h4>
                 </div>
-                <div class="widget widget_tag_cloud">
+                <!--<div class="widget widget_tag_cloud">
                     <h4 class="izw-blue">Categories</h4>
                     <div class="tagcloud">
                         <?php
@@ -145,7 +145,7 @@ $blog_type = $options['blog_type'];
                             }
                         ?>
                     </div>
-                </div>
+                </div>-->
                 <?php dynamic_sidebar('izw-program'); ?>
             </div><!--/sidebar-->
 

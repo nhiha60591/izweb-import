@@ -8,6 +8,7 @@
             update_option( 'izweb_custom_fields_cation', $caption );
             update_option( 'izweb_import_title', $_POST['post_title'] );
             update_option( 'izweb_import_content', $_POST['post_content'] );
+            update_option( 'izweb_post_excerpt', $_POST['post_excerpt'] );
         }
     ?>
     <?php do_action( 'izweb_before_setting_page'); ?>
@@ -83,12 +84,17 @@
                 <?php
                 $post_title = get_option( 'izweb_import_title' );
                 $post_content = get_option( 'izweb_import_content' );
+                $post_excerpt = get_option( 'izweb_post_excerpt' );
                 ?>
                 <tbody>
                     <?php do_action( 'izweb_before_main_fields' ); ?>
                     <tr>
                         <th><label form="post_title"><?php _e( "Post title", __TEXTDOMAIN__ ); ?></label></th>
                         <td><input type="text" name="post_title" id="post_title" value="<?php echo @$post_title; ?>"></td>
+                    </tr>
+                    <tr>
+                        <th><label form="post_title"><?php _e( "Post Excerpt", __TEXTDOMAIN__ ); ?></label></th>
+                        <td><input type="text" name="post_excerpt" id="post_excerpt" value="<?php echo @$post_excerpt; ?>"></td>
                     </tr>
                     <tr>
                         <th><label form="post_content"><?php _e( "Post content", __TEXTDOMAIN__ ); ?></label></th>
