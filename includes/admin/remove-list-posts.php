@@ -51,7 +51,6 @@ class TT_Example_List_Table extends WP_List_Table {
     function column_default($item, $column_name){
         switch($column_name){
             case 'date_import':
-            case 'amount':
                 return $item[$column_name];
             default:
                 return print_r($item,true); //Show the whole array for troubleshooting purposes
@@ -61,6 +60,13 @@ class TT_Example_List_Table extends WP_List_Table {
         $term = get_term( $item['type'], 'program_cat' );
         return sprintf('%1$s',
             /*$1%s*/ $term->name
+        );
+    }
+    function column_amount( $item ){
+        global $wpdb;
+        $amount = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE `meta_key` = 'izweb_remove_id' AND `meta_value` = '{$item['ID']}'");
+        return sprintf('%1$s',
+            /*$1%s*/ $amount
         );
     }
 
@@ -84,7 +90,7 @@ class TT_Example_List_Table extends WP_List_Table {
     function column_action($item){
 
         //Return the title contents
-        return sprintf('<a class="button button-primary" href="./edit.php?post_type=program&page=izweb-import-remove-posts&action=delete&pid=%1$s">Remove posts</a>',
+        return sprintf('<a class="button button-primary izw-remove-post" href="./edit.php?post_type=program&page=izweb-import-remove-posts&action=delete&pid=%1$s">Remove posts</a>',
             $item['ID']
         );
     }
@@ -283,5 +289,17 @@ $testListTable->prepare_items();
         <!-- Now we can render the completed list table -->
         <?php $testListTable->display() ?>
     </form>
+    <script type="text/javascript">
+        jQuery(document).ready(function ($){
+            $(".izw-remove-post").click(function (){
+                var r = confirm("Are you sure want delete all post of this XML?");
+                if (r == true) {
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+        });
+    </script>
 
 </div>

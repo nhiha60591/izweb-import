@@ -1,22 +1,31 @@
-.izweb-item .post-title {
-    width: 100%;
+.izweb-item {
     display: table;
+    float: left;
+    margin-bottom: 30px;
+    width: 100%;
 }
-.izweb-item .post-title a{
+.izweb-item .izweb-item-left {
     display: table-cell;
-    vertical-align: middle;
+    vertical-align: top;
 }
-.izweb-item .post-title a.izw-title-link {
+.izweb-item .izweb-item-right {
+    display: table-cell;
+    vertical-align: top;
+}
+.izweb-item .post-title {
+    line-height: 40px;
+}
+.izweb-item a.izw-title-link {
     background: url("../images/title-icon.png") left center no-repeat;
     padding-left: 40px;
 }
-.izweb-item .post-title  a.izw-title-link,.izweb-item .post-title a.izw-title-link:visited {
+.izweb-item  a.izw-title-link,.izweb-item a.izw-title-link:visited {
     font-weight: 600;
     font-size: 1.4em;
     color: #27CCC0;
     text-decoration: none;
 }
-.izweb-item .post-title  a.izw-detail {
+.izweb-item  a.izw-detail {
     float: right;
     text-decoration: none;
     background: #27CCC0;
@@ -64,15 +73,11 @@
     display: table-cell;
     width: 50%;
 }
-.izweb-item .izw-left {
-    width: 50%;
+#izweb-search .izweb-search-form form div.izw-left {
     margin: 0;
-    display: inline-block;
     padding: 0;
 }
-.izweb-item .izw-right {
-    display: inline-block;
-    width: 49%;
+#izweb-search .izweb-search-form form div.izw-right {
     margin: 0;
     padding: 0;
     text-align: right;
@@ -86,6 +91,7 @@
 }
 .izweb .widget .izweb-list-fields ul li label{
     width: auto;
+    font-weight: bold;
 }
 #sidebar.izweb .widget h4,#sidebar.izweb .widget h4 a{
     line-height: 50px;
@@ -100,49 +106,54 @@
 #sidebar.izweb .widget h4.izw-orange{
     background: #ff5d52;
 }
-.izweb-item {
-    width: 100%;
-    float: left;
-    margin-bottom: 30px;
-}
-.izweb-item.include-clinical-trials{
-    display: none;
-}
 .izweb-item.include-clinical-trials .post-title a.izw-title-link {
     background: url("../images/title-icon-orange.png") left center no-repeat;
     padding-left: 40px;
 }
-.izweb-item.include-clinical-trials .post-title  a.izw-detail {
+.izweb-item.include-clinical-trials  a.izw-detail {
     background: #ff5d52;
 }
-.izweb-item.include-clinical-trials .post-title  a.izw-title-link,.izweb-item.include-clinical-trials .post-title a.izw-title-link:visited {
+.izweb-item.include-clinical-trials  a.izw-title-link,.izweb-item.include-clinical-trials a.izw-title-link:visited {
     color: #ff5d52;
 }
-nav.izweb-pagination {
+#search-outer .ui-widget-content li:hover, .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus {
+    background: silver !important;
+}
+.wp-pagenavi,nav.izweb-pagination {
     text-align: center;
     margin-top: 20px;
     width: 100%;
     float: left;
 }
-nav.izweb-pagination a {
+nav.izweb-pagination a,.wp-pagenavi a {
     text-decoration: none;
     padding: 5px 10px;
     background: #e4e4e4;
     color: #000000;
     font-weight: bold;
 }
-nav.izweb-pagination span.page-current {
+.wp-pagenavi span{
+    border: none;
+}
+nav.izweb-pagination span.page-current, .wp-pagenavi span.current {
     padding: 5px 10px;
 }
-nav.izweb-pagination a {
+nav.izweb-pagination a,.wp-pagenavi a {
     text-decoration: none;
     padding: 5px 10px;
     background: #27CCC0;
     color: #FFFFFF;
     font-weight: bold;
+    border: none;
 }
-nav.izweb-pagination a:hover{
+nav.izweb-pagination a:hover, .wp-pagenavi a:hover{
     background: #999999;
+}
+#izweb-search .izweb-search-form .nectar-button.has-icon{
+    padding: 11px 13px !important;
+    padding-left: 42px !important;
+    padding-right: 42px !important;
+    top: 0 !important;
 }
 @media screen and (max-width: 1024px){
     .izweb-item .izweb-list-fields ul li label {

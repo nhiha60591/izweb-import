@@ -34,11 +34,55 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             add_action( 'widgets_init', array( $this, 'plugin_widgets_init' ) );
             add_action( 'init', array( $this, 'register_taxonomy' ) );
             add_filter( 'the_content', array( $this, 'change_content' ), 999 );
+            add_action( 'admin_notices', array( $this, 'admin_notices' ) );
+			add_filter( 'posts_where' , array( $this, 'posts_where_statement') );
+			add_filter('posts_orderby', array( $this, 'edit_posts_orderby'));
+			add_filter('posts_join_paged', array( $this, 'edit_posts_join_paged'));
+			//add_filter('posts_groupby', array( $this, 'edit_posts_groupby'));
+            add_action( 'wp_ajax_izw_search_ajax', array( $this, 'izw_search_ajax' ) );
+            add_action( 'wp_ajax_nopriv_izw_search_ajax', array( $this, 'izw_search_ajax' ) );
 
             register_activation_hook( __FILE__, array( $this, 'install' ) );
             register_deactivation_hook( __FILE__, array( $this, 'uninstall' ) );
+		
+        }	
 
-        }
+		function edit_posts_groupby($groupby) {
+			global $wpdb, $is_search_program;
+			if($is_search_program ){
+				$groupby = "{$wpdb->prefix}term_relationships.term_taxonomy_id";
+			}
+			return $groupby;
+		}		
+		
+		function edit_posts_join_paged($join_paged_statement) {
+			global $wpdb, $is_search_program;
+			
+			if($is_search_program){
+				$join_paged_statement .= " INNER JOIN {$wpdb->prefix}term_relationships ON ({$wpdb->prefix}posts.ID = {$wpdb->prefix}term_relationships.object_id)";
+			}
+			return $join_paged_statement;	
+		}
+
+		function edit_posts_orderby($orderby_statement) {
+			global $wpdb, $is_search_program;
+			if($is_search_program ){
+				$orderby_statement = "{$wpdb->prefix}term_relationships.term_taxonomy_id DESC";
+			}
+			return $orderby_statement;
+		}
+
+ 
+		function posts_where_statement( $where ) {
+			//gets the global query var object
+			global $wp_query;
+			 
+			if(isset( $_REQUEST['izweb-search'] ) && !empty($_REQUEST['condition']) ){
+				$where = str_replace("wp_postmeta.meta_key = 'condition'", "( wp_postmeta.meta_key = 'condition' OR wp_postmeta.meta_key = 'intervention_name')", $where);
+			}
+			 
+			return $where;
+		}
 
         /**
          * Init Plugin
@@ -245,9 +289,9 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             if( isset( $_POST['izw-import'] ) ){
                 $custom_fields = get_option( 'izweb_custom_fields' );
                 $post_title = get_option( 'izweb_import_title' );
-                $post_content = get_option( 'izweb_import_content' );
                 $post_excerpt = get_option( 'izweb_post_excerpt' );
-                $post_content_array =  explode(PHP_EOL, $post_content) ;
+                $post_content = get_option( 'izweb_import_content' );
+                preg_match_all("/\[[^\]]*\]/", $post_content, $matches);
                 do_action( "izweb_before_process_import", $_POST );
                 // Set file type allow
                 $format_allows = array(
@@ -265,9 +309,9 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                         $error->add( 'file_type', __( "Sorry, only <strong>".implode(" ,", $format_allows['type'])."</strong> files are allowed", __TEXTDOMAIN__ ) );
                     }
                     // Check file size
-                    if ($_FILES["file-import"]["size"] > 500000) {
+                    /*if ($_FILES["file-import"]["size"] > 500000) {
                         $error->add( 'file_size', __( "Sorry, your file is too large", __TEXTDOMAIN__ ) );
-                    }
+                    }*/
                     if( sizeof( $error->get_error_codes() ) > 0){
                         foreach( $error->get_error_messages() as $mes ){
                             echo '<div class="error">'.$mes.'</div>';
@@ -283,6 +327,8 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                         $zip = new ZipArchive();
                         $x = $zip->open( $folder . "/".basename($_FILES["file-import"]["name"]));
                         if($x === true) {
+                            $wpdb->insert( $table, array('date_import'=> date( 'Y-m-d H:i:s' ), 'type' => $_POST['cat'], 'status' => 0,'amount' => 0 ) );
+                            $remove_id = $wpdb->insert_id;
                             $zip->extractTo($folder);
                             $zip->close();
                             unlink($folder."/".basename($_FILES["file-import"]["name"]));
@@ -293,10 +339,6 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                                     $doc = new DOMDocument();
                                     $doc->load( $folder."/".$f );
                                     if( !empty( $custom_fields ) && is_array( $custom_fields ) && !empty($post_title) && !empty( $post_content ) ){
-                                        $content = '';
-                                        foreach($post_content_array as $row){
-                                            $content .= trim( $doc->getElementsByTagName( $row )->item(0)->nodeValue );
-                                        }
                                         $defaults = array(
                                             'post_status'           => 'publish',
                                             'post_type'             => 'program',
@@ -304,7 +346,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                                             'post_author'           => $current_user->ID,
                                             'ping_status'           => get_option('default_ping_status'),
                                             'post_title'            => trim( $doc->getElementsByTagName( $post_title )->item(0)->nodeValue ),
-                                            'post_content'          => $content
+                                            'post_content'          => $post_content
                                         );
                                         $defaults = apply_filters( 'izweb_insert_arg_default', $defaults );
                                         $postid = wp_insert_post( $defaults );
@@ -314,15 +356,17 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                                             foreach( $custom_fields as $field){
                                                 update_post_meta( $postid, $field, trim(  $doc->getElementsByTagName( $field )->item(0)->nodeValue ) );
                                             }
-                                            foreach($post_content_array as $row){
-                                                update_post_meta( $postid, $row, trim( $doc->getElementsByTagName( $row )->item(0)->nodeValue ) );
+                                            foreach( $matches[0] as $row){
+                                                $field_key = ltrim($row, "[");
+                                                $field_key = rtrim($field_key, "]");
+                                                update_post_meta( $postid, $field_key, trim( $doc->getElementsByTagName( $field_key )->item(0)->nodeValue ) );
+                                                update_post_meta( $postid, 'izweb_remove_id', $remove_id );
                                             }
                                         }
                                     }
                                     unlink( $folder."/".$f );
                                 }
                             }
-                            $wpdb->insert( $table, array('date_import'=> date( 'Y-m-d H:i:s' ), 'type' => $_POST['cat'], 'status' => 0,'amount' => $i ) );
                             echo "<h2>".__( "Import successfully", __TEXTDOMAIN__) .". </h2>";
                             //wp_redirect( add_query_arg( array( 'page' => 'izweb-import-file', 'tab' => 'select-option' ), admin_url('admin.php') ) );
                             exit();
@@ -413,15 +457,16 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                 global $post;
                 $content = '';
                 $post_content = get_option( 'izweb_import_content' );
-                $post_content_array =  explode(PHP_EOL, $post_content) ;
-                $parray = array();
-                foreach( $post_content_array as $row){
-                    $parray[] = array( 'key' => $row, 'caption' => $row );
+                preg_match_all("/\[[^\]]*\]/", $post_content, $matches);
+                $fields_key = array();
+                $fields_value = array();
+                foreach( $matches[0] as $row){
+                    $field_key = ltrim($row, "[");
+                    $field_key = rtrim($field_key, "]");
+                    $fields_key[] =  $row;
+                    $fields_value[] =  nl2br( preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", get_post_meta( $post->ID, $field_key, true ) ) );
                 }
-                $parray = apply_filters( 'izweb_list_content_fields', $parray );
-                foreach($parray as $row){
-                    $content .= '<div class="izweb-content izweb-'.$row['key'].'"><label>'.$row['caption'].'</label><div class="izweb-post-text">'.get_post_meta( $post->ID, $row['key'], true ).'</div></div>';
-                }
+                $content = str_replace( $fields_key, $fields_value, $post_content );
             }
             return $content;
         }
@@ -430,6 +475,38 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          */
         function remove_posts_page(){
              include "includes/admin/remove-posts-page.php";
+        }
+        function admin_notices(){
+            if( isset( $_REQUEST['remove']) && $_REQUEST['remove'] == 'yes'){
+                ?>
+                <div class="updated">
+                    <p><?php esc_html_e( 'Remove successfully!', 'izweb-import' ); ?></p>
+                </div>
+            <?php
+            }
+        }
+        function izw_search_ajax(){
+            global $wpdb;
+            $meta_key = $_POST['meta_key'];
+            $meta_value = $_POST['meta_value'];
+            $tag1 = array();
+            if( $meta_key == 'condition'){
+                $sql1 = $wpdb->get_results( 'SELECT DISTINCT `meta_value` FROM '.$wpdb->postmeta.' INNER JOIN '.$wpdb->posts.' ON '.$wpdb->posts.'.`ID` = '.$wpdb->postmeta.'.`post_id` AND '.$wpdb->posts.'.`post_status` = "publish"  AND ( '.$wpdb->postmeta.'.meta_key = "condition" OR '.$wpdb->postmeta.'.meta_key = "intervention_name") AND `meta_value` LIKE "%'.$meta_value.'%" LIMIT 5', ARRAY_A );
+            }else{
+                $sql1 = $wpdb->get_results( 'SELECT DISTINCT `meta_value` FROM '.$wpdb->postmeta.' INNER JOIN '.$wpdb->posts.' ON '.$wpdb->posts.'.`ID` = '.$wpdb->postmeta.'.`post_id` AND '.$wpdb->posts.'.`post_status` = "publish"  AND '.$wpdb->postmeta.'.`meta_key` = "'.$meta_key.'" AND '.$wpdb->postmeta.'.`meta_value` LIKE "%'.$meta_value.'%" LIMIT 5', ARRAY_A );
+            }
+            foreach( $sql1 as $rows){
+                if( !empty($rows['meta_value'] ) ) {
+                    $multi = explode("\n", $rows['meta_value']);
+                    if (is_array($multi)) {
+                        foreach($multi as $country) {
+                            if (strpos(strtolower($country), strtolower($meta_value) )!==false)  $tag1[] = trim($country);
+                        }
+                    } else $tag1[] = trim($rows['meta_value']);
+                }
+            }
+            echo json_encode( array_unique($tag1));
+            die();
         }
     }
     new Izweb_Import();
