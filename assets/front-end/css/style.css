@@ -73,6 +73,9 @@
     display: table-cell;
     width: 50%;
 }
+#izweb-search .izweb-search-form form div input[type="text"]{
+    background: #FFF;
+}
 #izweb-search .izweb-search-form form div.izw-left {
     margin: 0;
     padding: 0;
