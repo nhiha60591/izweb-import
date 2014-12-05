@@ -51,6 +51,7 @@ class TT_Example_List_Table extends WP_List_Table {
     function column_default($item, $column_name){
         switch($column_name){
             case 'date_import':
+            case 'file_name':
                 return $item[$column_name];
             default:
                 return print_r($item,true); //Show the whole array for troubleshooting purposes
@@ -112,6 +113,7 @@ class TT_Example_List_Table extends WP_List_Table {
     function get_columns(){
         $columns = array(
             'date_import'     => 'Date XML imported',
+            'file_name'     => 'File name',
             'type'    => 'Type',
             'amount'  => 'Amount of post',
             'action'  => 'Action'
