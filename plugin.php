@@ -21,7 +21,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! class_exists( 'Izweb_Import' ) ) :
     class Izweb_Import{
         function __construct(){
-            $this->defines();
             add_action( 'init', array( $this, 'init') );
             add_action( 'admin_print_scripts', array( $this, 'admin_plugin_scripts' ) );
             add_action( 'wp_enqueue_scripts', array( $this, 'front_plugin_scripts' ) );
@@ -45,6 +44,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
 
             register_activation_hook( __FILE__, array( $this, 'install' ) );
             register_deactivation_hook( __FILE__, array( $this, 'uninstall' ) );
+		
         }	
 
 		function edit_posts_groupby($groupby) {
@@ -58,7 +58,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
 		function edit_posts_join_paged($join_paged_statement) {
 			global $wpdb, $is_search_program;
 			
-			if($is_search_program){
+			if($is_search_program && !empty($_GET['include_trial']) ){
 				$join_paged_statement .= " INNER JOIN {$wpdb->prefix}term_relationships ON ({$wpdb->prefix}posts.ID = {$wpdb->prefix}term_relationships.object_id)";
 			}
 			return $join_paged_statement;	
@@ -88,6 +88,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * Init Plugin
          */
         function init(){
+            $this->defines();
             $this->includes();
             $this->register_post_type();
             $this->load_plugin_textdomain();
@@ -108,7 +109,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             define( '__TEXTDOMAIN__', 'izweb-import' );
             define( '__IZIPPATH__', plugin_dir_path( __FILE__ ) );
             define( '__IZIPURL__', plugin_dir_url( __FILE__ ) );
-            define( '__DBVERSION', '2.0.4' );
+            define( '__DBVERSION', '1.0.1' );
         }
 
         /**
@@ -245,24 +246,17 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          */
         function install(){
             global $wpdb;
-            $db_version = get_option( 'izweb_import_db_version');
-            if( empty( $db_version ) || version_compare( __DBVERSION, $db_version ) > 0 ){
-                $table = $wpdb->prefix.'remove_posts';
-                $SQL = "CREATE TABLE IF NOT EXISTS `{$table}` (
-                          `ID` int(11) NOT NULL AUTO_INCREMENT,
-                          `date_import` datetime NOT NULL,
-                          `type` int(11) NOT NULL,
-                          `amount` int(11) NOT NULL,
-                          `status` int(11) NOT NULL,
-                          PRIMARY KEY (`ID`)
-                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
-                $alterTable = "ALTER TABLE {$table}
-                               ADD file_name varchar(255)";
-                $wpdb->query( $alterTable );
-                require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-                dbDelta( $SQL );
-                update_option( 'izweb_import_db_version', __DBVERSION );
-            }
+            $table = $wpdb->prefix.'remove_posts';
+            $SQL = "CREATE TABLE IF NOT EXISTS `{$table}` (
+                      `ID` int(11) NOT NULL AUTO_INCREMENT,
+                      `date_import` datetime NOT NULL,
+                      `type` int(11) NOT NULL,
+                      `amount` int(11) NOT NULL,
+                      `status` int(11) NOT NULL,
+                      PRIMARY KEY (`ID`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
+            require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+            dbDelta( $SQL );
         }
 
         /**
@@ -333,7 +327,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                         $zip = new ZipArchive();
                         $x = $zip->open( $folder . "/".basename($_FILES["file-import"]["name"]));
                         if($x === true) {
-                            $wpdb->insert( $table, array('date_import'=> date( 'Y-m-d H:i:s' ), 'type' => $_POST['cat'], 'status' => 0,'amount' => 0,'file_name' => basename($_FILES["file-import"]["name"]) ) );
+                            $wpdb->insert( $table, array('date_import'=> date( 'Y-m-d H:i:s' ), 'type' => $_POST['cat'], 'status' => 0,'amount' => 0 ) );
                             $remove_id = $wpdb->insert_id;
                             $zip->extractTo($folder);
                             $zip->close();

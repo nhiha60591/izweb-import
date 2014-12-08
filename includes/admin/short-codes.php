@@ -39,6 +39,15 @@ function hh_search_program( $atts ){
             'paged' => $paged
         );	
 		
+		if (empty($_GET['include_trial'])) {
+			$args['tax_query'] = array(
+									array(
+										'taxonomy' => 'program_cat',
+										'field'    => 'slug',
+										'terms'    => 'exclude-clinical-trials',
+									));
+		}
+		
         if( !empty($data[$key1]) ){
             $args['meta_query'][] = array(
                 'key'     => $key1,
