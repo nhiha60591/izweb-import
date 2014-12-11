@@ -74,7 +74,7 @@ function izweb_show_custom_field( $post_id ){
 				$multi = explode("\n", $val[0]);
 				if (is_array($multi)) $val = $multi;
 			}
-            echo '<li><label>'.$caption[$i].': </label>'. implode( ",", $val ).'</li>';
+            echo '<li><label>'.$caption[$i].': </label><span class="izweb-field-value">'. implode( ",", $val ).'</span></li>';
             $i++;
         }
         echo "</ul></div>";

@@ -19,11 +19,16 @@
     background: url("../images/title-icon.png") left center no-repeat;
     padding-left: 40px;
 }
+.izweb-item.include-clinical-trials .post-title a.izw-title-link {
+    background: url("../images/title-icon-orange.png") left center no-repeat;
+    padding-left: 40px;
+}
 .izweb-item  a.izw-title-link,.izweb-item a.izw-title-link:visited {
     font-weight: 600;
     font-size: 1.4em;
     color: #27CCC0;
     text-decoration: none;
+    display: table-cell;
 }
 .izweb-item  a.izw-detail {
     float: right;
@@ -54,13 +59,17 @@
     padding: 0;
     width: 50%;
     display: inline-block;
+    vertical-align: top;
 }
 .izweb-item .izweb-list-fields ul li label {
     font-weight: 600;
-    display: inline-block;
-    width: 22%;
+    display: table-cell;
+    min-width: 120px;
     padding: 0;
     margin: 0;
+}
+.izweb-item .izweb-list-fields ul li span.izweb-field-value{
+    display: table-cell;
 }
 .izweb-item .alr{
     text-align: right;
@@ -122,7 +131,7 @@
     color: #FFF;
     text-decoration: none;
     clear: both;
-	
+
 }
 #sidebar.izweb .widget h4.izw-blue{
     background: #27CCC0;
@@ -130,10 +139,6 @@
 }
 #sidebar.izweb .widget h4.izw-orange{
     background: #ff5d52;
-}
-.izweb-item.include-clinical-trials .post-title a.izw-title-link {
-    background: url("../images/title-icon-orange.png") left center no-repeat;
-    padding-left: 40px;
 }
 .izweb-item.include-clinical-trials  a.izw-detail {
     background: #ff5d52;
@@ -190,7 +195,7 @@ nav.izweb-pagination a:hover, .wp-pagenavi a:hover{
 }
 @media screen and (max-width: 1024px){
     .izweb-item .izweb-list-fields ul li label {
-        width: 120px;
+        min-width: 120px;
     }
 }
 @media screen and (max-width: 640px) {

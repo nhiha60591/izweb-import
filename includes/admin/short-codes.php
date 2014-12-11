@@ -73,7 +73,9 @@ function hh_search_program( $atts ){
                 <?php while($program->have_posts()): $program->the_post();$terms = wp_get_post_terms( get_the_ID(), 'program_cat', $args ); $termslug = array(); foreach( $terms as $term){ $termslug[] = $term->slug;}  global $post;?>
                     <div class="izweb-item <?php echo implode(" ", $termslug ); ?>">
                         <div class="izweb-item-left">
-                            <div class="post-title"><a class="izw-title-link" href="<?php the_permalink(); ?>"><?php echo _substr(get_the_title(), 70); ?></a></div>
+                            <div class="post-title">
+                                <a class="izw-title-link" href="<?php the_permalink(); ?>"><?php echo _substr(get_the_title(), 70); ?></a>
+                            </div>
                             <div class="post-content">
                                 <?php do_action( 'izweb_before_search_content', get_the_ID() ); ?>
                                 <?php $exc_text = get_post_meta( get_the_ID(), $excerpt, true ); if( !empty( $exc_text ) ) echo _substr(strip_tags($exc_text, '<p><a>'),300); else echo _substr(strip_tags($post->post_excerpt, '<p><a>'),300); ?>
