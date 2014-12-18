@@ -131,7 +131,7 @@ $blog_type = $options['blog_type'];
                     <div class="widget-contents">
                         <?php global $post; izweb_show_custom_field( $post->ID ); ?>
                     </div>
-                    <h4 class="izw-orange">&laquo;<a href="javascript: history.go(-1)" >Back to search</a></h4>
+                    <h4 class="izw-orange">&laquo;<a href="<?php echo get_the_permalink( search_link( 'search_program') ); ?>" >Back to search</a></h4>
                 </div>
                 <!--<div class="widget widget_tag_cloud">
                     <h4 class="izw-blue">Categories</h4>

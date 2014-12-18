@@ -81,3 +81,10 @@ function izweb_show_custom_field( $post_id ){
     }
     do_action( 'izweb_after_show_custom_fields' );
 }
+function search_link( $short_code = ''){
+    global $wpdb;
+    $SQL = "SELECT ID FROM {$wpdb->posts}
+            WHERE `post_content` LIKE '%[{$short_code}%'
+            LIMIT 1";
+    return $wpdb->get_var( $SQL );
+}

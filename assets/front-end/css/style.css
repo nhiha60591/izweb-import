@@ -180,10 +180,10 @@ nav.izweb-pagination a:hover, .wp-pagenavi a:hover{
     background: #999999;
 }
 #izweb-search .izweb-search-form .nectar-button.has-icon{
-    padding: 11px 13px !important;
+    padding: 12px 13px !important;
     padding-left: 42px !important;
     padding-right: 42px !important;
-    top: 0 !important;
+    top: 4 !important;
 	box-shadow: none!important;
 	-o-box-shadow: none!important;
 	-moz-box-shadow: none!important;
