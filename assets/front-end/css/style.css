@@ -179,6 +179,9 @@ nav.izweb-pagination a,.wp-pagenavi a {
 nav.izweb-pagination a:hover, .wp-pagenavi a:hover{
     background: #999999;
 }
+h4.box-shadow {
+    box-shadow: 3px 3px 5px #888;
+}
 #izweb-search .izweb-search-form .nectar-button.has-icon{
     padding: 12px 13px !important;
     padding-left: 42px !important;

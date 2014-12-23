@@ -17,9 +17,11 @@ function hh_search_program( $atts ){
     extract( shortcode_atts(
             array(
                 'key1' => 'condition',
-                'key2' => 'living',
                 'caption1' => 'I am looking for EAP\'s for:',
+                'placeholder1' => 'e.g. Depression',
+                'key2' => 'living',
                 'caption2' => 'I\'m living in:',
+                'placeholder2' => 'e.g. United States',
                 'excerpt' => $exc
             ), $atts )
     );
@@ -124,17 +126,17 @@ function hh_search_program( $atts ){
     }
     ob_start();
     ?>
-    <div id="izweb-search" class="izweb-search" style="width: 100%; float: left;">
+    <div id="izweb-search" class="izweb-search" style="width: 100%;">
         <div class="izweb-search-form">
             <form name="" action="<?php echo get_the_permalink( $post->ID ); ?>" method="get">
                 <input type="hidden" name="page_id" value="<?php echo @$_REQUEST['page_id']; ?>">
                 <div class="izw-left">
                     <label for="<?php echo $key1; ?>"><?php _e( $caption1, __TEXTDOMAIN__) ?></label>
-                    <input type="text" name="<?php echo $key1; ?>" id="<?php echo $key1; ?>" value="" />
+                    <input type="text" name="<?php echo $key1; ?>" id="<?php echo $key1; ?>" value="" placeholder="<?php echo $placeholder1 ?>" />
                 </div>
                 <div class="izw-right">
                 <label for="<?php echo $key2; ?>"><?php _e( $caption2, __TEXTDOMAIN__) ?></label>
-                    <input type="text" name="<?php echo $key2; ?>" id="<?php echo $key2; ?>" value="" />
+                    <input type="text" name="<?php echo $key2; ?>" id="<?php echo $key2; ?>" value="" placeholder="<?php echo $placeholder2 ?>" />
                     <input type="submit" class="nectar-button large extra-color-1 has-icon regular-button" value="<?php _e( "SEARCH", __TEXTDOMAIN__) ?>" name="izweb-search" data-color-override="false" data-hover-color-override="false" data-hover-text-color-override="#fff" />
                     <label style="display: block;">include available Clinical Trials in search <input type="checkbox" name="include_trial" value="1" <?php if (!empty($_REQUEST['include_trial'])) echo 'checked="checked"';?> /></label>
                 </div>
@@ -197,4 +199,29 @@ function hh_search_program( $atts ){
     <?php
     echo @$search_results;
     return ob_get_clean();
+}
+add_shortcode( 'counter_program', 'hh_counter_program' );
+function hh_counter_program( $atts ){
+    extract( shortcode_atts(
+            array(
+                'field' => 'slug',
+                'taxonomy' => 'program_cat',
+                'terms' => 'include-clinical-trials'
+            ), $atts )
+    );
+    $args = array(
+        'post_type' => 'program',
+        'posts_per_page' => -1,
+        'post_status' => 'publish',
+        'tax_query' => array(
+            array(
+                'taxonomy' => $taxonomy,
+                'field'    => $field,
+                'terms'    => $terms,
+            ),
+        ),
+    );
+    // Program Counter
+    $program_counter = new WP_Query( $args );
+    return $program_counter->post_count;
 }

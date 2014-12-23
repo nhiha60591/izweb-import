@@ -9,7 +9,7 @@
 Plugin Name: Izweb Import Plugin
 Plugin URI: https://github.com/nhiha60591/izweb-import/
 Description: Import File from zip file
-Version: 1.0.1
+Version: 2.0.1
 Author: Izweb Team
 Author URI: https://github.com/nhiha60591
 Text Domain: izweb-import
@@ -452,6 +452,12 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                 'after_title' => '</h1>',
             ) );
         }
+
+        /**
+         * Add Break Line for Content
+         * @param $content
+         * @return mixed|string
+         */
         function change_content( $content ){
             if ( is_singular('program') ){
                 global $post;
@@ -476,6 +482,10 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
         function remove_posts_page(){
              include "includes/admin/remove-posts-page.php";
         }
+
+        /**
+         * Add Admin Notices
+         */
         function admin_notices(){
             if( isset( $_REQUEST['remove']) && $_REQUEST['remove'] == 'yes'){
                 ?>
@@ -485,6 +495,10 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             <?php
             }
         }
+
+        /**
+         * Search Ajax Function
+         */
         function izw_search_ajax(){
             global $wpdb;
             $meta_key = $_POST['meta_key'];

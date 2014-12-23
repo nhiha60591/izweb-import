@@ -127,11 +127,27 @@ $blog_type = $options['blog_type'];
 
             <div id="sidebar" class="col span_3 col_last izweb">
                 <div id="izweb-program-widget" class="widget izweb-program-widget">
-                    <h4 class="izw-blue">Program Details</h4>
+                    <?php
+                        $terms = wp_get_post_terms( get_the_ID(), 'program_cat' );
+                        $orange = false;
+                        foreach( $terms as $term ){
+                            if( $term->slug == 'include-clinical-trials' ) { $orange = true; break;}
+                        }
+                        if( $orange ){
+                            $class = 'izw-orange';
+                            $hashtag = 'clinicaltrials';
+                        }else{
+                            $class = 'izw-blue';
+                            $hashtag = 'expandedaccess';
+                        }
+                    ?>
+                    <div style="display: none;" class="program-hastag">@mymotorrows%20%23<?php echo $hashtag; ?></div>
+                    <h4 class="<?php echo $class; ?> box-shadow"><?php the_terms( $post->ID, 'program_cat', '', ' / ' ); ?></h4>
+                    <h4 class="<?php echo $class; ?>">Program Details</h4>
                     <div class="widget-contents">
                         <?php global $post; izweb_show_custom_field( $post->ID ); ?>
                     </div>
-                    <h4 class="izw-orange">&laquo;<a href="<?php echo get_the_permalink( search_link( 'search_program') ); ?>" >Back to search</a></h4>
+                    <h4 class="<?php echo $class; ?>">&laquo;<a href="<?php echo get_the_permalink( search_link( 'search_program') ); ?>" >Back to search</a></h4>
                 </div>
                 <!--<div class="widget widget_tag_cloud">
                     <h4 class="izw-blue">Categories</h4>

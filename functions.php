@@ -84,7 +84,8 @@ function izweb_show_custom_field( $post_id ){
 function search_link( $short_code = ''){
     global $wpdb;
     $SQL = "SELECT ID FROM {$wpdb->posts}
-            WHERE `post_content` LIKE '%[{$short_code}%'
+            WHERE `post_content` LIKE '%[{$short_code}%' AND `post_type`='page'
             LIMIT 1";
+
     return $wpdb->get_var( $SQL );
 }
