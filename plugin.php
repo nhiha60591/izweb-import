@@ -109,7 +109,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             define( '__TEXTDOMAIN__', 'izweb-import' );
             define( '__IZIPPATH__', plugin_dir_path( __FILE__ ) );
             define( '__IZIPURL__', plugin_dir_url( __FILE__ ) );
-            define( '__DBVERSION', '1.0.1' );
+            define( '__DBVERSION', '2.0.4' );
         }
 
         /**
@@ -246,19 +246,25 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          */
         function install(){
             global $wpdb;
-            $table = $wpdb->prefix.'remove_posts';
-            $SQL = "CREATE TABLE IF NOT EXISTS `{$table}` (
-                      `ID` int(11) NOT NULL AUTO_INCREMENT,
-                      `date_import` datetime NOT NULL,
-                      `type` int(11) NOT NULL,
-                      `amount` int(11) NOT NULL,
-                      `status` int(11) NOT NULL,
-                      PRIMARY KEY (`ID`)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
-            require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-            dbDelta( $SQL );
+            $db_version = get_option( 'izweb_import_db_version');
+            if( empty( $db_version ) || version_compare( __DBVERSION, $db_version ) > 0 ){
+                $table = $wpdb->prefix.'remove_posts';
+                $SQL = "CREATE TABLE IF NOT EXISTS `{$table}` (
+                          `ID` int(11) NOT NULL AUTO_INCREMENT,
+                          `date_import` datetime NOT NULL,
+                          `type` int(11) NOT NULL,
+                          `amount` int(11) NOT NULL,
+                          `status` int(11) NOT NULL,
+                          PRIMARY KEY (`ID`)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
+                $alterTable = "ALTER TABLE {$table}
+                               ADD file_name varchar(255)";
+                $wpdb->query( $alterTable );
+                require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+                dbDelta( $SQL );
+                update_option( 'izweb_import_db_version', __DBVERSION );
+            }
         }
-
         /**
          * Uninstall Plugin
          */
@@ -327,7 +333,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                         $zip = new ZipArchive();
                         $x = $zip->open( $folder . "/".basename($_FILES["file-import"]["name"]));
                         if($x === true) {
-                            $wpdb->insert( $table, array('date_import'=> date( 'Y-m-d H:i:s' ), 'type' => $_POST['cat'], 'status' => 0,'amount' => 0 ) );
+                            $wpdb->insert( $table, array('date_import'=> date( 'Y-m-d H:i:s' ), 'type' => $_POST['cat'], 'status' => 0,'amount' => 0,'file_name' => basename($_FILES["file-import"]["name"]) ) );
                             $remove_id = $wpdb->insert_id;
                             $zip->extractTo($folder);
                             $zip->close();
