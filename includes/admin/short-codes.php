@@ -202,26 +202,13 @@ function hh_search_program( $atts ){
 }
 add_shortcode( 'counter_program', 'hh_counter_program' );
 function hh_counter_program( $atts ){
-    extract( shortcode_atts(
+    $atr = shortcode_atts(
             array(
                 'field' => 'slug',
                 'taxonomy' => 'program_cat',
-                'terms' => 'include-clinical-trials'
-            ), $atts )
+                'terms' => ''
+            ), $atts
     );
-    $args = array(
-        'post_type' => 'program',
-        'posts_per_page' => -1,
-        'post_status' => 'publish',
-        'tax_query' => array(
-            array(
-                'taxonomy' => $taxonomy,
-                'field'    => $field,
-                'terms'    => $terms,
-            ),
-        ),
-    );
-    // Program Counter
-    $program_counter = new WP_Query( $args );
-    return $program_counter->post_count;
+    $term_atr = get_term_by( $atr['field'], $atr['terms'], $atr['taxonomy'] );
+    return $term_atr->count;
 }
