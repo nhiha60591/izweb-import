@@ -130,7 +130,9 @@ $blog_type = $options['blog_type'];
                     <?php
                         $terms = wp_get_post_terms( get_the_ID(), 'program_cat' );
                         $orange = false;
+                        $term_title = '';
                         foreach( $terms as $term ){
+                            $term_title = $term->name;
                             if( $term->slug == 'include-clinical-trials' ) { $orange = true; break;}
                         }
                         if( $orange ){
@@ -142,7 +144,7 @@ $blog_type = $options['blog_type'];
                         }
                     ?>
                     <div style="display: none;" class="program-hastag">@mymotorrows%20%23<?php echo $hashtag; ?></div>
-                    <h4 class="<?php echo $class; ?> box-shadow"><?php the_terms( $post->ID, 'program_cat', '', ' / ' ); ?></h4>
+                    <h4 class="<?php echo $class; ?> box-shadow"><?php echo $term_title; ?></h4>
                     <h4 class="<?php echo $class; ?>">Program Details</h4>
                     <div class="widget-contents">
                         <?php global $post; izweb_show_custom_field( $post->ID ); ?>
