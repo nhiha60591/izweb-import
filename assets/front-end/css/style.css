@@ -198,8 +198,8 @@ h4.box-shadow {
     -o-transition: none!important;
 }
 .izw-error-mes{
-    width: 400px;
-    margin: auto;
+    width: 530px;
+    margin: 20px auto;
 }
 @media screen and (max-width: 1024px){
     .izweb-item .izweb-list-fields ul li label {
