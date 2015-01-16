@@ -67,6 +67,8 @@ function hh_search_program( $atts ){
         }
         $args = apply_filters( 'izweb_arg_search', $args );
         $program = new WP_Query( $args );
+        $error = '';
+        $search_results = '';
         ob_start();
         if( $program->have_posts() ){
             ?>
@@ -118,15 +120,27 @@ function hh_search_program( $atts ){
 			?>
 			</div>
 			<?php
+            $search_results = ob_get_clean();
+        }else{
+            ?>
+            <div class="izw-error-mes">
+                <h3>Sorry, no results were found!</h3>
+                <ul class="izw-error-mes-ul">
+                    <li>Try other keywords or check your spelling</li>
+                    <li>Check the "include available Clinic Trials in search" option</li>
+                </ul>
+            </div>
+            <?php
+            $error = ob_get_clean();
         }
         // Restore original Post Data
         wp_reset_postdata();
 
-        $search_results = ob_get_clean();
     }
     ob_start();
     ?>
     <div id="izweb-search" class="izweb-search" style="width: 100%;">
+        <?php echo $error; ?>
         <div class="izweb-search-form">
             <form name="" action="<?php echo get_the_permalink( $post->ID ); ?>" method="get">
                 <input type="hidden" name="page_id" value="<?php echo @$_REQUEST['page_id']; ?>">
@@ -137,7 +151,7 @@ function hh_search_program( $atts ){
                 <div class="izw-right">
                 <label for="<?php echo $key2; ?>"><?php _e( $caption2, __TEXTDOMAIN__) ?></label>
                     <input type="text" name="<?php echo $key2; ?>" id="<?php echo $key2; ?>" value="" placeholder="<?php echo $placeholder2 ?>" />
-                    <input type="submit" class="nectar-button large extra-color-1 has-icon regular-button" value="<?php _e( "SEARCH", __TEXTDOMAIN__) ?>" name="izweb-search" data-color-override="false" data-hover-color-override="false" data-hover-text-color-override="#fff" />
+                    <input type="submit" style="top: 4px;" class="nectar-button large extra-color-1 has-icon regular-button" value="<?php _e( "SEARCH", __TEXTDOMAIN__) ?>" name="izweb-search" data-color-override="false" data-hover-color-override="false" data-hover-text-color-override="#fff" />
                     <label style="display: block;">include available Clinical Trials in search <input type="checkbox" name="include_trial" value="1" <?php if (!empty($_REQUEST['include_trial'])) echo 'checked="checked"';?> /></label>
                 </div>
             </form>
