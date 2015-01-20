@@ -140,7 +140,6 @@ function hh_search_program( $atts ){
     ob_start();
     ?>
     <div id="izweb-search" class="izweb-search" style="width: 100%;">
-        <?php echo $error; ?>
         <div class="izweb-search-form">
             <form name="" action="<?php echo get_the_permalink( $post->ID ); ?>" method="get">
                 <input type="hidden" name="page_id" value="<?php echo @$_REQUEST['page_id']; ?>">
@@ -209,6 +208,7 @@ function hh_search_program( $atts ){
                 });
             </script>
         </div>
+        <?php echo $error; ?>
     </div><!-- END #izweb-search -->
     <?php
     echo @$search_results;
