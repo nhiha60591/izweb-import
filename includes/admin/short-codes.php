@@ -128,6 +128,7 @@ function hh_search_program( $atts ){
                 <ul class="izw-error-mes-ul">
                     <li>Try other keywords or check your spelling</li>
                     <li>Check the "include available Clinic Trials in search" option</li>
+                    <li>Get notified when we have information for <?php print htmlspecialchars($_REQUEST[$key1]); ?> in <?php print htmlspecialchars($_REQUEST[$key2]); ?> <?php gravity_form(10, false, false, false, '', false); ?></li>
                 </ul>
             </div>
             <?php
