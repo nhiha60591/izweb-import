@@ -138,6 +138,8 @@ function hh_search_program( $atts ){
 
     }
     ob_start();
+    $key1value = isset($_REQUEST[$key1] ) ? $_REQUEST[$key1] : '';
+    $key2value = isset($_REQUEST[$key2] ) ? $_REQUEST[$key2] : '';
     ?>
     <div id="izweb-search" class="izweb-search" style="width: 100%;">
         <div class="izweb-search-form">
@@ -145,11 +147,11 @@ function hh_search_program( $atts ){
                 <input type="hidden" name="page_id" value="<?php echo @$_REQUEST['page_id']; ?>">
                 <div class="izw-left">
                     <label for="<?php echo $key1; ?>"><?php _e( $caption1, __TEXTDOMAIN__) ?></label>
-                    <input type="text" name="<?php echo $key1; ?>" id="<?php echo $key1; ?>" value="" placeholder="<?php echo $placeholder1 ?>" />
+                    <input type="text" name="<?php echo $key1; ?>" id="<?php echo $key1; ?>" value="<?php echo $key1value; ?>" placeholder="<?php echo $placeholder1 ?>" />
                 </div>
                 <div class="izw-right">
                 <label for="<?php echo $key2; ?>"><?php _e( $caption2, __TEXTDOMAIN__) ?></label>
-                    <input type="text" name="<?php echo $key2; ?>" id="<?php echo $key2; ?>" value="" placeholder="<?php echo $placeholder2 ?>" />
+                    <input type="text" name="<?php echo $key2; ?>" id="<?php echo $key2; ?>" value="<?php echo $key2value; ?>" placeholder="<?php echo $placeholder2 ?>" />
                     <input type="submit" style="top: 4px;" class="nectar-button large extra-color-1 has-icon regular-button" value="<?php _e( "SEARCH", __TEXTDOMAIN__) ?>" name="izweb-search" data-color-override="false" data-hover-color-override="false" data-hover-text-color-override="#fff" />
                     <label style="display: block;">include available Clinical Trials in search <input type="checkbox" name="include_trial" value="1" <?php if (!empty($_REQUEST['include_trial'])) echo 'checked="checked"';?> /></label>
                 </div>
