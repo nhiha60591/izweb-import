@@ -439,7 +439,7 @@ add_shortcode('divider', 'nectar_divider');
 
 //milestone
 function nectar_milestone($atts, $content = null) {  
-    extract(shortcode_atts(array("subject" => '', 'symbol' => '', 'symbol_position' => 'after','terms'=>'', 'number' => '0', 'color' => 'Default'), $atts));
+    extract(shortcode_atts(array("subject" => '', 'symbol' => '', 'symbol_position' => 'after','terms'=>'', 'counter_type'=>'', 'number' => '0', 'color' => 'Default'), $atts));
 	
 	if(!empty($symbol)) {
 		$symbol_markup = 'data-symbol="'.$symbol.'" data-symbol-pos="'.$symbol_position.'"';
@@ -450,7 +450,7 @@ function nectar_milestone($atts, $content = null) {
         $number = do_shortcode( "[counter_program terms='{$terms}']" );
     }
 	
-	$number_markup = '<div class="number '.strtolower($color).'"><span>'.$number.'</span></div>';
+	$number_markup = '<div class="number '.strtolower($color). " " .$counter_type.'"><span>'.$number.'</span></div>';
 	$subject_markup = '<div class="subject">'.$subject.'</div>';
 	
     return do_shortcode( '<div class="nectar-milestone" '.$symbol_markup.'> '.$number_markup.' '.$subject_markup.' </div>' );

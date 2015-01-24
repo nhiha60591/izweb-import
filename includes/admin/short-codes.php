@@ -69,6 +69,12 @@ function hh_search_program( $atts ){
         $program = new WP_Query( $args );
         $error = '';
         $search_results = '';
+        $include = $exclude = 0;
+        if (empty($_GET['include_trial'])) {
+            $exclude = $program->found_posts;
+        }else{
+            $include = $program->found_posts;
+        }
         ob_start();
         if( $program->have_posts() ){
             ?>
@@ -121,6 +127,8 @@ function hh_search_program( $atts ){
 			</div>
 			<?php
             $search_results = ob_get_clean();
+            $found_mes = '<h3 class="izw-found-mes">'.__( "We have found {$exclude} Early Access Programs (green) and {$include} Clinical Trials (red)")."</h3>";
+            $search_results = $found_mes.$search_results;
         }else{
             ?>
             <div class="izw-error-mes">

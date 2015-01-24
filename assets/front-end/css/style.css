@@ -201,6 +201,14 @@ h4.box-shadow {
     width: 530px;
     margin: 20px auto;
 }
+.nectar-milestone .number.eap > span{
+    background: url("../images/title-icon.png") left center no-repeat;
+    padding-left: 40px;
+}
+.nectar-milestone .number.c > span{
+    background: url("../images/title-icon-orange.png") left center no-repeat;
+    padding-left: 40px;
+}
 @media screen and (max-width: 1024px){
     .izweb-item .izweb-list-fields ul li label {
         min-width: 120px;
