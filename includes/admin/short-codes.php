@@ -10,7 +10,7 @@
  */
 add_shortcode( 'search_program', 'hh_search_program' );
 function hh_search_program( $atts ){
-    global $post;
+    global $post,$wpdb;
     // Attributes
     $exc = get_option( 'izweb_post_excerpt' );
     $exc = !empty($exc) ? $exc : 'brief_summary';
@@ -49,8 +49,9 @@ function hh_search_program( $atts ){
 										'terms'    => 'exclude-clinical-trials',
 									));
 		}
-		
+		$key_check = array();
         if( !empty($data[$key1]) ){
+            $key_check[$key1] = $data[$key1];
             $args['meta_query'][] = array(
                 'key'     => $key1,
                 'value'   => $data[$key1],
@@ -58,6 +59,7 @@ function hh_search_program( $atts ){
             );
         }
         if( !empty($data[$key2]) ){
+            $key_check[$key2] = $data[$key2];
 			$args['meta_query']['relation'] = 'AND';
             $args['meta_query'][] = array(
                 'key'     => $key2,
@@ -66,14 +68,16 @@ function hh_search_program( $atts ){
             );
         }
         $args = apply_filters( 'izweb_arg_search', $args );
+        $include = $exclude = 0;
         $program = new WP_Query( $args );
         $error = '';
         $search_results = '';
-        $include = $exclude = 0;
-        if (empty($_GET['include_trial'])) {
-            $exclude = $program->found_posts;
+        if(!empty( $_GET['include_trial'] )){
+            $include = (int)$program->found_posts - (int)get_eap( $key_check );
+            $exclude = get_eap( $key_check );
+
         }else{
-            $include = $program->found_posts;
+            $exclude = $program->found_posts;
         }
         ob_start();
         if( $program->have_posts() ){
@@ -236,4 +240,29 @@ function hh_counter_program( $atts ){
     );
     $term_atr = get_term_by( $atr['field'], $atr['terms'], $atr['taxonomy'] );
     return $term_atr->count;
+}
+function get_eap( $key = array() ){
+    global $wpdb;
+    if( !is_array( $key ) && sizeof( $key ) <= 0) return 0;
+    $term = get_term_by( 'slug', 'exclude-clinical-trials', 'program_cat' );
+    $postID = get_objects_in_term( $term->term_id, 'program_cat');
+    $exArgs = array(
+        'post_type' => 'program',
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+        'post__in' => $postID
+    );
+    foreach( $key as $k=>$v ){
+        $exArgs['meta_query'][] = array(
+            'key'     => $k,
+            'value'   => $v,
+            'compare' => 'LIKE',
+        );
+    }
+    if( sizeof( $key ) >= 2){
+        $exArgs['meta_query']['relation'] = 'AND';
+    }
+    $ex = new WP_Query( $exArgs );
+    wp_reset_postdata();
+    return $ex->found_posts;
 }
