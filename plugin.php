@@ -23,7 +23,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
         function __construct(){
             add_action( 'init', array( $this, 'init') );
             add_action( 'admin_print_scripts', array( $this, 'admin_plugin_scripts' ) );
-            add_action( 'wp_enqueue_scripts', array( $this, 'front_plugin_scripts' ) );
+            add_action( 'wp_enqueue_scripts', array( $this, 'front_plugin_scripts' ), 999 );
             add_action( 'admin_menu', array( $this, 'admin_menu' ) );
             add_action( 'izw_tab_import', array( $this, 'import_tab_import' ) );
             add_action( 'izw_tab_select-option', array( $this, 'import_tab_select_option' ) );
@@ -127,6 +127,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             wp_enqueue_style( 'izweb-import-front', plugin_dir_url( __FILE__ )."assets/front-end/css/style.css" );
             wp_enqueue_style( 'izweb-import-ui', plugin_dir_url( __FILE__ )."assets/front-end/css/jquery-ui.css" );
             wp_enqueue_script( 'izweb-import-ui', plugin_dir_url( __FILE__ )."assets/front-end/js/jquery-ui.js", array( 'jquery' ) );
+            wp_enqueue_script( 'izweb-import-overwrite', plugin_dir_url( __FILE__ )."assets/front-end/js/izw-import.js", array( 'jquery' ), '1.0.0', true );
         }
 
         /**
@@ -136,6 +137,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             add_submenu_page( 'edit.php?post_type=program', __( 'Import Settings', __TEXTDOMAIN__ ), __( 'Import Settings', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-setting', array( $this, 'import_page' ));
             add_submenu_page( 'edit.php?post_type=program', __( 'Select fields', __TEXTDOMAIN__ ), __( 'Select fields', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-fields', array( $this, 'setting_page' ) );
             add_submenu_page( 'edit.php?post_type=program', __( 'Remove posts', __TEXTDOMAIN__ ), __( 'Remove posts', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-remove-posts', array( $this, 'remove_posts_page' ) );
+            add_submenu_page( 'edit.php?post_type=program', __( 'Search filters', __TEXTDOMAIN__ ), __( 'Search filter', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-search-filters', array( $this, 'search_filters_page' ) );
         }
 
         /**
@@ -164,6 +166,9 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          */
         function import_tab_select_option(){
             include "includes/admin/import-select-option.php";
+        }
+        function search_filters_page(){
+
         }
         /**
          * Register Post Type Program
@@ -525,9 +530,51 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                     } else $tag1[] = trim($rows['meta_value']);
                 }
             }
-            echo json_encode( array_unique($tag1));
+            echo json_encode( array_intersect_key(
+                $tag1,
+                array_unique(array_map("StrToLower",$tag1))
+            ) );
             die();
         }
     }
     new Izweb_Import();
 endif;
+
+//Shortcode Processing
+//milestone
+function my_nectar_milestone($atts, $content = null) {
+    extract(shortcode_atts(array("subject" => '', 'symbol' => '', 'symbol_position' => 'after','terms'=>'', 'counter_type'=>'', 'number' => '0', 'color' => 'Default'), $atts));
+
+	if(!empty($symbol)) {
+		$symbol_markup = 'data-symbol="'.$symbol.'" data-symbol-pos="'.$symbol_position.'"';
+	} else {
+		$symbol_markup = null;
+	}
+    if( $terms != ''){
+        $number = do_shortcode( "[counter_program terms='{$terms}']" );
+    }
+
+	$number_markup = '<div class="number '.strtolower($color). " " .$counter_type.'"><span>'.$number.'</span></div>';
+	$subject_markup = '<div class="subject">'.$subject.'</div>';
+
+    return do_shortcode( '<div class="nectar-milestone" '.$symbol_markup.'> '.$number_markup.' '.$subject_markup.' </div>' );
+}
+
+
+add_action( 'after_setup_theme', 'my_ag_child_theme_setup' );
+
+function my_ag_child_theme_setup() {
+   remove_shortcode( 'milestone' );
+   add_shortcode('milestone', 'my_nectar_milestone');
+}
+/*
+function child_nectar_register_js() {
+	if (!is_admin()) {
+		// Dequeue
+		wp_deregister_script( 'nectarFrontend' );
+		wp_register_script('nectarFrontend', plugins_url( '/init.js', __FILE__ ), array('jquery', 'superfish'), '4.8.1', TRUE);
+		wp_enqueue_script('nectarFrontend');
+	}
+}
+add_action('wp_enqueue_scripts', 'child_nectar_register_js',100);
+*/
