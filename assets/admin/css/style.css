@@ -1,3 +1,11 @@
 button#delete-fields{
     float: right;
 }
+p.izw-inside-item {
+    width: 50%;
+    float: left;
+}
+p.izw-inside-item label{
+    display: inline-block;
+    width: 100px;
+}

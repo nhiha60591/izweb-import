@@ -74,11 +74,11 @@
 .izweb-item .alr{
     text-align: right;
 }
-#izweb-search .izweb-search-form form{
+#izweb-search .izweb-search-form .default-form{
     display: table;
     width: 100%;
 }
-#izweb-search .izweb-search-form form > div{
+#izweb-search .izweb-search-form .default-form > div{
     display: table-cell;
     width: 50%;
 }
@@ -208,6 +208,13 @@ h4.box-shadow {
 .nectar-milestone .number.c > span{
     background: url("../images/title-icon-orange.png") left center no-repeat;
     padding-left: 40px;
+}
+.filter-item {
+    float: left;
+    width: 50%;
+}
+.filter-item:nth-child(2n-2){
+    text-align: right;
 }
 @media screen and (max-width: 1024px){
     .izweb-item .izweb-list-fields ul li label {

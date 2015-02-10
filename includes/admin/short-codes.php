@@ -13,6 +13,7 @@ function hh_search_program( $atts ){
     global $post,$wpdb;
     // Attributes
     $exc = get_option( 'izweb_post_excerpt' );
+    $filter_fields = get_option( 'izw_filters_ctf' );
     $exc = !empty($exc) ? $exc : 'brief_summary';
     extract( shortcode_atts(
             array(
@@ -158,15 +159,25 @@ function hh_search_program( $atts ){
         <div class="izweb-search-form">
             <form name="" action="<?php echo get_the_permalink( $post->ID ); ?>" method="get">
                 <input type="hidden" name="page_id" value="<?php echo @$_REQUEST['page_id']; ?>">
-                <div class="izw-left">
-                    <label for="<?php echo $key1; ?>"><?php _e( $caption1, __TEXTDOMAIN__) ?></label>
-                    <input type="text" name="<?php echo $key1; ?>" id="<?php echo $key1; ?>" value="<?php echo $key1value; ?>" placeholder="<?php echo $placeholder1 ?>" />
+                <div class="default-form">
+                    <div class="izw-left">
+                        <label for="<?php echo $key1; ?>"><?php _e( $caption1, __TEXTDOMAIN__) ?></label>
+                        <input type="text" name="<?php echo $key1; ?>" id="<?php echo $key1; ?>" value="<?php echo $key1value; ?>" placeholder="<?php echo $placeholder1 ?>" />
+                    </div>
+                    <div class="izw-right">
+                    <label for="<?php echo $key2; ?>"><?php _e( $caption2, __TEXTDOMAIN__) ?></label>
+                        <input type="text" name="<?php echo $key2; ?>" id="<?php echo $key2; ?>" value="<?php echo $key2value; ?>" placeholder="<?php echo $placeholder2 ?>" />
+                        <input type="submit" style="top: 4px;" class="nectar-button large extra-color-1 has-icon regular-button" value="<?php _e( "SEARCH", __TEXTDOMAIN__) ?>" name="izweb-search" data-color-override="false" data-hover-color-override="false" data-hover-text-color-override="#fff" />
+                        <label style="display: block;">include available Clinical Trials in search <input type="checkbox" name="include_trial" value="1" <?php if (!isset($_REQUEST['izweb-search']) || !empty($_REQUEST['include_trial'])) echo 'checked="checked"';?> /></label>
+                    </div>
                 </div>
-                <div class="izw-right">
-                <label for="<?php echo $key2; ?>"><?php _e( $caption2, __TEXTDOMAIN__) ?></label>
-                    <input type="text" name="<?php echo $key2; ?>" id="<?php echo $key2; ?>" value="<?php echo $key2value; ?>" placeholder="<?php echo $placeholder2 ?>" />
-                    <input type="submit" style="top: 4px;" class="nectar-button large extra-color-1 has-icon regular-button" value="<?php _e( "SEARCH", __TEXTDOMAIN__) ?>" name="izweb-search" data-color-override="false" data-hover-color-override="false" data-hover-text-color-override="#fff" />
-                    <label style="display: block;">include available Clinical Trials in search <input type="checkbox" name="include_trial" value="1" <?php if (!isset($_REQUEST['izweb-search']) || !empty($_REQUEST['include_trial'])) echo 'checked="checked"';?> /></label>
+                <div class="izw-filter-fields">
+                    <?php foreach( $filter_fields as $k=>$v): ?>
+                        <div class="filter-item">
+                            <?php echo izw_input_html( $k, $v['field_type'], $v ); ?>
+                        </div>
+                    <?php endforeach; ?>
+                    <div class="clear" style="clear: both;"></div>
                 </div>
             </form>
             <script type="text/javascript">
@@ -265,4 +276,27 @@ function get_eap( $key = array() ){
     $ex = new WP_Query( $exArgs );
     wp_reset_postdata();
     return $ex->found_posts;
+}
+function izw_input_html( $key, $type = 'text', $data = array() ){
+    switch($type){
+        case 'text':
+            ob_start();
+            ?>
+            <label><?php echo $data['heading']; ?></label>
+            <input type="text" name="<?php echo $key; ?>" placeholder="<?php echo $data['placeholder']; ?>"/>
+            <?php
+            $result = ob_get_clean();
+            return apply_filters( 'izw_input_text_html', $result );
+        case 'select':
+            ob_start();
+            return ob_get_clean();
+        default:
+            ob_start();
+            ?>
+                <label><?php echo $data['heading']; ?></label>
+                <input type="text" name="<?php echo $key; ?>" placeholder="<?php echo $data['placeholder']; ?>"/>
+            <?php
+            $result = ob_get_clean();
+            return apply_filters( 'izw_input_text_html', $result );
+    }
 }

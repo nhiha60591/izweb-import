@@ -137,7 +137,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             add_submenu_page( 'edit.php?post_type=program', __( 'Import Settings', __TEXTDOMAIN__ ), __( 'Import Settings', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-setting', array( $this, 'import_page' ));
             add_submenu_page( 'edit.php?post_type=program', __( 'Select fields', __TEXTDOMAIN__ ), __( 'Select fields', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-fields', array( $this, 'setting_page' ) );
             add_submenu_page( 'edit.php?post_type=program', __( 'Remove posts', __TEXTDOMAIN__ ), __( 'Remove posts', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-remove-posts', array( $this, 'remove_posts_page' ) );
-            add_submenu_page( 'edit.php?post_type=program', __( 'Search filters', __TEXTDOMAIN__ ), __( 'Search filter', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-search-filters', array( $this, 'search_filters_page' ) );
+            add_submenu_page( 'edit.php?post_type=program', __( 'Search filters', __TEXTDOMAIN__ ), __( 'Search filters', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-search-filters', array( $this, 'search_filters_page' ) );
         }
 
         /**
@@ -167,8 +167,14 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
         function import_tab_select_option(){
             include "includes/admin/import-select-option.php";
         }
-        function search_filters_page(){
 
+        /**
+         * Display Search Fields Page
+         */
+        function search_filters_page(){
+            wp_enqueue_style('dashboard');
+            wp_enqueue_script('dashboard');
+            include "includes/admin/search-filters.php";
         }
         /**
          * Register Post Type Program
