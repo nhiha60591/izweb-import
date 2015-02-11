@@ -61,12 +61,28 @@ function hh_search_program( $atts ){
         }
         if( !empty($data[$key2]) ){
             $key_check[$key2] = $data[$key2];
-			$args['meta_query']['relation'] = 'AND';
             $args['meta_query'][] = array(
                 'key'     => $key2,
                 'value'   => $data[$key2],
                 'compare' => 'LIKE',
             );
+        }
+        if( sizeof( $filter_fields ) > 0 ){
+            foreach( $filter_fields as $k=>$v ){
+                if( isset( $_REQUEST[$k]) && $_REQUEST[$k] != '' && $_REQUEST[$k] != '0' ){
+                    $key_check[$k] = $_REQUEST[$k];
+                    $compare = 'LIKE';
+                    if( $v['field_type'] == 'select') $compare = '=';
+                    $args['meta_query'][] = array(
+                        'key'     => $k,
+                        'value'   => $_REQUEST[$k],
+                        'compare' => $compare,
+                    );
+                }
+            }
+        }
+        if( sizeof( $args['meta_query']) >= 2){
+            $args['meta_query']['relation'] = 'AND';
         }
         $args = apply_filters( 'izweb_arg_search', $args );
         $include = $exclude = 0;
@@ -76,7 +92,6 @@ function hh_search_program( $atts ){
         if(!empty( $_GET['include_trial'] )){
             $include = (int)$program->found_posts - (int)get_eap( $key_check );
             $exclude = get_eap( $key_check );
-
         }else{
             $exclude = $program->found_posts;
         }
@@ -171,6 +186,7 @@ function hh_search_program( $atts ){
                         <label style="display: block;">include available Clinical Trials in search <input type="checkbox" name="include_trial" value="1" <?php if (!isset($_REQUEST['izweb-search']) || !empty($_REQUEST['include_trial'])) echo 'checked="checked"';?> /></label>
                     </div>
                 </div>
+                <?php if( sizeof( $filter_fields ) > 0 ): ?>
                 <div class="izw-filter-fields">
                     <?php foreach( $filter_fields as $k=>$v): ?>
                         <div class="filter-item">
@@ -179,6 +195,7 @@ function hh_search_program( $atts ){
                     <?php endforeach; ?>
                     <div class="clear" style="clear: both;"></div>
                 </div>
+                <?php endif; ?>
             </form>
             <script type="text/javascript">
                 jQuery(document).ready(function( $ ){
@@ -278,18 +295,34 @@ function get_eap( $key = array() ){
     return $ex->found_posts;
 }
 function izw_input_html( $key, $type = 'text', $data = array() ){
+    global $wpdb;
     switch($type){
         case 'text':
+            $vl = isset( $_REQUEST[$key] ) ? $_REQUEST[$key] : '';
             ob_start();
             ?>
             <label><?php echo $data['heading']; ?></label>
-            <input type="text" name="<?php echo $key; ?>" placeholder="<?php echo $data['placeholder']; ?>"/>
+            <input class="izw-input-text" type="text" name="<?php echo $key; ?>" value="<?php echo $vl; ?>" placeholder="<?php echo $data['placeholder']; ?>"/>
             <?php
             $result = ob_get_clean();
-            return apply_filters( 'izw_input_text_html', $result );
+            return apply_filters( 'izw_input_text_html', $result, $key, $data );
         case 'select':
             ob_start();
-            return ob_get_clean();
+            $selected = isset( $_REQUEST[$key] ) ? $_REQUEST[$key] : '';
+            $meta_value = $wpdb->get_col( "SELECT meta_value FROM {$wpdb->postmeta} WHERE meta_key='{$key}'");
+            $value = array_intersect_key( $meta_value, array_unique( array_map( "StrToLower", $meta_value ) ) );
+            if( sizeof( $value ) > 0 ){
+                ?>
+                <label><?php echo $data['heading']; ?></label>
+                <select name="<?php echo $key; ?>" class="izw-select">
+                    <option value=""><?php echo $data['placeholder']; ?></option>
+                    <?php foreach( $value as $v ): ?>
+                        <option <?php selected( $selected, $v ); ?> value="<?php echo $v; ?>"><?php echo $v; ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <?php
+            }
+            return apply_filters( 'izw_select_html', ob_get_clean(), $key, $data );
         default:
             ob_start();
             ?>
@@ -297,6 +330,6 @@ function izw_input_html( $key, $type = 'text', $data = array() ){
                 <input type="text" name="<?php echo $key; ?>" placeholder="<?php echo $data['placeholder']; ?>"/>
             <?php
             $result = ob_get_clean();
-            return apply_filters( 'izw_input_text_html', $result );
+            return apply_filters( 'izw_input_text_html', $result, $key, $data );
     }
 }

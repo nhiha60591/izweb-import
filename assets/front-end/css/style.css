@@ -212,9 +212,17 @@ h4.box-shadow {
 .filter-item {
     float: left;
     width: 50%;
+    margin-bottom: 10px;
 }
 .filter-item:nth-child(2n-2){
     text-align: right;
+}
+.filter-item:nth-child(1n-1) label{
+    display: inline-block;
+    width: 144px;
+}
+.izw-select{
+    width: auto;
 }
 @media screen and (max-width: 1024px){
     .izweb-item .izweb-list-fields ul li label {
