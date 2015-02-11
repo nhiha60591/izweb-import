@@ -309,8 +309,8 @@ function izw_input_html( $key, $type = 'text', $data = array() ){
         case 'select':
             ob_start();
             $selected = isset( $_REQUEST[$key] ) ? $_REQUEST[$key] : '';
-            $meta_value = $wpdb->get_col( "SELECT meta_value FROM {$wpdb->postmeta} WHERE meta_key='{$key}'");
-            $value = array_intersect_key( $meta_value, array_unique( array_map( "StrToLower", $meta_value ) ) );
+            $meta_value = $wpdb->get_col( "SELECT DISTINCT meta_value FROM {$wpdb->postmeta} WHERE meta_key='{$key}'");
+            $value = array_filter(array_intersect_key( $meta_value, array_unique( array_map( "StrToLower", $meta_value) ) ));
             if( sizeof( $value ) > 0 ){
                 ?>
                 <label><?php echo $data['heading']; ?></label>
