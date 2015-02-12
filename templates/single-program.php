@@ -124,32 +124,33 @@ $blog_type = $options['blog_type'];
 
             </div><!--/span_9-->
 
-
-            <div id="sidebar" class="col span_3 col_last izweb">
+            <?php
+            $terms = wp_get_post_terms( get_the_ID(), 'program_cat' );
+            $orange = false;
+            $term_title = '';
+            foreach( $terms as $term ){
+                $term_title = $term->name;
+                if( $term->slug == 'include-clinical-trials' ) { $orange = true; break;}
+            }
+            if( $orange ){
+                $class = 'izw-orange';
+                $hashtag = 'clinicaltrials';
+                $sidebar_class = 'orange';
+            }else{
+                $class = 'izw-blue';
+                $hashtag = 'expandedaccess';
+                $sidebar_class = 'blue';
+            }
+            ?>
+            <div id="sidebar" class="col span_3 col_last izweb <?php echo $sidebar_class; ?>">
                 <div id="izweb-program-widget" class="widget izweb-program-widget">
-                    <?php
-                        $terms = wp_get_post_terms( get_the_ID(), 'program_cat' );
-                        $orange = false;
-                        $term_title = '';
-                        foreach( $terms as $term ){
-                            $term_title = $term->name;
-                            if( $term->slug == 'include-clinical-trials' ) { $orange = true; break;}
-                        }
-                        if( $orange ){
-                            $class = 'izw-orange';
-                            $hashtag = 'clinicaltrials';
-                        }else{
-                            $class = 'izw-blue';
-                            $hashtag = 'expandedaccess';
-                        }
-                    ?>
                     <div style="display: none;" class="program-hastag">@mymotorrows%20%23<?php echo $hashtag; ?></div>
                     <h4 class="<?php echo $class; ?> box-shadow" style="font-size: 0.8em !important;"><?php echo $term_title; ?></h4>
                     <h4 class="<?php echo $class; ?>">Program Details</h4>
                     <div class="widget-contents">
                         <?php global $post; izweb_show_custom_field( $post->ID ); ?>
                     </div>
-                    <h4 class="<?php echo $class; ?>">&laquo;<a href="<?php echo get_the_permalink( search_link( 'search_program') ); ?>" >Back to search</a></h4>
+                    <h5 ><a href="<?php echo get_the_permalink( search_link( 'search_program') ); ?>"> &laquo; &nbsp;Back to search</a></h5>
                 </div>
                 <!--<div class="widget widget_tag_cloud">
                     <h4 class="izw-blue">Categories</h4>

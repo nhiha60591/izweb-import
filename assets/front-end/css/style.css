@@ -133,11 +133,11 @@
     clear: both;
 
 }
-#sidebar.izweb .widget h4.izw-blue{
+#sidebar.izweb .widget h4.izw-blue,#sidebar.izweb.blue .widget h4{
     background: #27CCC0;
     font-weight: bold;
 }
-#sidebar.izweb .widget h4.izw-orange{
+#sidebar.izweb .widget h4.izw-orange,#sidebar.izweb.orange .widget h4{
     background: #ff5d52;
 }
 .izweb-item.include-clinical-trials  a.izw-detail {
@@ -180,7 +180,7 @@ nav.izweb-pagination a:hover, .wp-pagenavi a:hover{
     background: #999999;
 }
 h4.box-shadow {
-    box-shadow: 3px 3px 5px #888;
+    /*box-shadow: 3px 3px 5px #888;*/
     font-size: 0.8em !important;
 }
 #izweb-search .izweb-search-form .nectar-button.has-icon{

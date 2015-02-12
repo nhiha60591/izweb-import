@@ -458,8 +458,10 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                 'name' => __( 'Program Sidebar', 'izweb' ),
                 'id' => 'izw-program',
                 'description' => __( 'Widgets in this area will be shown below program single page', 'theme-slug' ),
-                'before_title' => '<h1>',
-                'after_title' => '</h1>',
+                'before_widget' => '<div id="%1$s" class="widget %2$s">',
+                'after_widget'  => '</div>',
+                'before_title' => '<h4>',
+                'after_title' => '</h4>',
             ) );
             register_sidebar( array(
                 'name' => __( 'Below Search Sidebar', 'izweb' ),
