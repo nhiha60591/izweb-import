@@ -9,3 +9,7 @@ p.izw-inside-item label{
     display: inline-block;
     width: 100px;
 }
+.custom_option textarea{
+    width: 100%;
+    min-height: 70px;
+}

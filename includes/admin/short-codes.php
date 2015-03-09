@@ -29,6 +29,7 @@ function hh_search_program( $atts ){
     $search_results = '';
     if(isset( $_REQUEST['izweb-search'] ) ){
 		global $is_search_program;
+        $post_ids = array();
 		$is_search_program = true;
         $data = array(
             $key1     => $_REQUEST[$key1],
@@ -71,8 +72,26 @@ function hh_search_program( $atts ){
             foreach( $filter_fields as $k=>$v ){
                 if( isset( $_REQUEST[$k]) && $_REQUEST[$k] != '' && $_REQUEST[$k] != '0' ){
                     $key_check[$k] = $_REQUEST[$k];
+                    if( !empty( $v['custom_option'])){
+                        if( $v['between'] == 'yes'){
+                            $list1 = explode( "\n", $v['custom_option'] );
+                            foreach( $list1 as $item){
+                                $list2 = explode( "-", explode( "|", $item ) );
+                                $slq = "SELECT DISTINCT($wpdb->posts.ID)
+                                      FROM $wpdb->posts
+                                      LEFT JOIN $wpdb->postmeta
+                                      ON $wpdb->posts.ID = $wpdb->postmeta.post_id
+                                      WHERE $wpdb->posts.post_type = 'program'
+                                      AND $wpdb->postmeta.meta_key = '{$k}'
+                                      AND CONVERT(SUBSTRING_INDEX({$wpdb->postmeta}.meta_value,' ',1),UNSIGNED INTEGER) BETWEEN {$list2[0]} AND {$list2[1]}";
+                                $post_ids[] = $wpdb->get_col( $slq );
+                                $post_ids = array_unique( $post_ids );
+                                $post_ids = array_filter( $post_ids );
+                            }
+                        }
+                    }
                     $compare = 'LIKE';
-                    if( $v['field_type'] == 'select') $compare = '=';
+                    if( $v['field_type'] == 'select' ) $compare = '=';
                     $args['meta_query'][] = array(
                         'key'     => $k,
                         'value'   => $_REQUEST[$k],
@@ -83,6 +102,9 @@ function hh_search_program( $atts ){
         }
         if( sizeof( $args['meta_query']) >= 2){
             $args['meta_query']['relation'] = 'AND';
+        }
+        if( sizeof( $post_ids ) > 0){
+            $args['post__in'] = $post_ids;
         }
         $args = apply_filters( 'izweb_arg_search', $args );
         $include = $exclude = 0;
@@ -156,7 +178,7 @@ function hh_search_program( $atts ){
                 <ul class="izw-error-mes-ul">
                     <li>Try other keywords or check your spelling</li>
                     <li>Check the "include available Clinic Trials in search" option</li>
-                    <li>Get notified when we have information for <?php print htmlspecialchars($_REQUEST[$key1]); ?> in <?php print htmlspecialchars($_REQUEST[$key2]); ?> <?php gravity_form(10, false, false, false, '', false); ?></li>
+                    <li>Get notified when we have information for <?php print htmlspecialchars($_REQUEST[$key1]); ?> in <?php print htmlspecialchars($_REQUEST[$key2]); ?> <?php if( function_exists( 'gravity_form')) gravity_form(10, false, false, false, '', false); ?></li>
                 </ul>
             </div>
             <?php
@@ -188,11 +210,15 @@ function hh_search_program( $atts ){
                 </div>
                 <?php if( sizeof( $filter_fields ) > 0 ): ?>
                 <div class="izw-filter-fields">
-                    <?php foreach( $filter_fields as $k=>$v): ?>
+                    <div class="izw-row">
+                    <?php $i=1; foreach( $filter_fields as $k=>$v): ?>
                         <div class="filter-item">
                             <?php echo izw_input_html( $k, $v['field_type'], $v ); ?>
+                            <div class="clear"></div>
                         </div>
-                    <?php endforeach; ?>
+                        <?php if( $i%2 == 0 ) echo "</div><div class=\"izw-row\">"; ?>
+                    <?php $i++; endforeach; ?>
+                    </div>
                     <div class="clear" style="clear: both;"></div>
                 </div>
                 <?php endif; ?>
@@ -323,6 +349,41 @@ function izw_input_html( $key, $type = 'text', $data = array() ){
                 <?php
             }
             return apply_filters( 'izw_select_html', ob_get_clean(), $key, $data );
+        case 'radio':
+            ob_start();
+            $checked = isset( $_REQUEST[$key] ) ? $_REQUEST[$key] : '';
+            if( !empty($data['custom_option'])){
+                $value =  explode( "\n", $data['custom_option']);
+                if( sizeof( $value ) > 0){
+                    ?>
+                    <label><?php echo $data['heading']; ?></label>
+                    <div class="izw-radio">
+                    <?php
+                    $i=1;
+                    foreach( $value as $v ):
+                        $v1 = explode( "|", $v);
+                    ?>
+                        <input type="radio" <?php checked( $checked, $v1[0]); ?> name="<?php echo $key; ?>" id="<?php echo $key,"-",$i; ?>" value="<?php echo $v1[0]; ?>" ><label for="<?php echo $key,"-",$i; ?>"><?php echo $v1[1]; ?></label><br />
+                    <?php $i++; endforeach;
+                    echo "</div>";
+                }
+                return apply_filters( 'izw_radio_html', ob_get_clean(), $key, $data );
+            }
+            $meta_value = $wpdb->get_col( "SELECT DISTINCT meta_value FROM {$wpdb->postmeta} WHERE meta_key='{$key}'");
+            $value = array_filter(array_intersect_key( $meta_value, array_unique( array_map( "StrToLower", $meta_value) ) ));
+            if( sizeof( $value ) > 0 ){
+                ?>
+                <label><?php echo $data['heading']; ?></label>
+                <div class="izw-radio">
+                <?php
+                $i=1;
+                foreach( $value as $v ):
+                    ?>
+                    <input type="radio" <?php checked( $checked, $v); ?> name="<?php echo $key; ?>" id="<?php echo $key,"-",$i; ?>" value="<?php echo $v; ?>" ><label for="<?php echo $key,"-",$i; ?>"><?php echo $v; ?></label><br />
+                    <?php $i++; endforeach;
+                echo "</div>";
+            }
+            return apply_filters( 'izw_radio_html', ob_get_clean(), $key, $data );
         default:
             ob_start();
             ?>

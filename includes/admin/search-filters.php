@@ -71,6 +71,13 @@ class TT_Example_List_Table extends WP_List_Table {
             /*$2%s*/ $item['field_placeholder']                //The value of the checkbox should be the record's id
         );
     }
+    function column_custom_option( $item ){
+        return sprintf(
+            '<textarea name="izw_filters_ctf[%1$s][custom_option]">%2$s</textarea>',
+            /*$1%s*/ $item['field_key'],  //Let's simply repurpose the table's singular label ("movie")
+            /*$2%s*/ $item['custom_option']                //The value of the checkbox should be the record's id
+        );
+    }
     function column_field_type( $item ){
         $field_type = array(
             array(
@@ -80,6 +87,10 @@ class TT_Example_List_Table extends WP_List_Table {
             array(
                 'name' => 'select',
                 'title' => 'Dropdown'
+            ),
+            array(
+                'name' => 'radio',
+                'title' => 'Radio'
             ),
         );
         $field_type = apply_filters( 'izw_import_field_type', $field_type );
@@ -93,6 +104,16 @@ class TT_Example_List_Table extends WP_List_Table {
         <?php
         $return = ob_get_clean();
         return $return;
+    }
+    function column_between( $item ){
+        ob_start();
+        ?>
+        <select name="izw_filters_ctf[<?php echo $item['field_key'] ?>][between]">
+            <option value="no" <?php selected('no',$item['between']); ?>>No</option>
+            <option value="yes" <?php selected('yes',$item['between']); ?>>Yes</option>
+        </select>
+        <?php
+        return ob_get_clean();
     }
     function column_cb($item){
         return sprintf(
@@ -122,11 +143,31 @@ class TT_Example_List_Table extends WP_List_Table {
             'field_key'     => 'Field Key',
             'field_heading'    => 'Heading Text',
             'field_placeholder'  => 'Placeholder',
-            'field_type'  => 'Field Type <button id="delete-fields" class="button button-primary">Delete selected fields</button>'
+            'custom_option' => 'Custom Options',
+            'field_type'  => 'Field Type',
+            'between'  => 'Between'
         );
         return $columns;
     }
+    protected function display_tablenav( $which ) {
+        if ( 'top' == $which )
+            wp_nonce_field( 'bulk-' . $this->_args['plural'] );
+        ?>
+        <div class="tablenav <?php echo esc_attr( $which ); ?>">
 
+            <div class="alignleft actions bulkactions">
+                <?php $this->bulk_actions( $which ); ?>
+                <button id="delete-fields" class="button button-primary">Delete selected fields</button>
+            </div>
+            <?php
+            $this->extra_tablenav( $which );
+            $this->pagination( $which );
+            ?>
+
+            <br class="clear" />
+        </div>
+    <?php
+    }
 
     /** ************************************************************************
      * Optional. If you want one or more columns to be sortable (ASC/DESC toggle),
@@ -175,7 +216,7 @@ class TT_Example_List_Table extends WP_List_Table {
         /**
          * First, lets decide how many records per page to show
          */
-        $per_page = 5;
+        $per_page = 10;
 
 
         /**
@@ -209,7 +250,9 @@ class TT_Example_List_Table extends WP_List_Table {
                     'field_key'     => $k,
                     'field_heading'    => $v['heading'],
                     'field_placeholder'  => $v['placeholder'],
-                    'field_type'  => $v['field_type']
+                    'custom_option'  => $v['custom_option'],
+                    'field_type'  => $v['field_type'],
+                    'between' => $v['between']
                 );
                 $i++;
             }
@@ -315,6 +358,16 @@ $testListTable->prepare_items();
                         <div class="inside">
                             <?php
                             global $wpdb;
+                            $query_test = "SELECT DISTINCT($wpdb->posts.ID),CONVERT(SUBSTRING_INDEX({$wpdb->postmeta}.meta_value,' ',1),UNSIGNED INTEGER) AS izw_age
+                                      FROM $wpdb->posts
+                                      LEFT JOIN $wpdb->postmeta
+                                      ON $wpdb->posts.ID = $wpdb->postmeta.post_id
+                                      WHERE $wpdb->posts.post_type = 'program'
+                                      AND $wpdb->postmeta.meta_key = 'minimum_age'
+                                      AND CONVERT(SUBSTRING_INDEX({$wpdb->postmeta}.meta_value,' ',1),UNSIGNED INTEGER) BETWEEN 1 AND 50";
+                            $test = $wpdb->get_results( $query_test );
+                            print_r( $test );
+                            $meta_keys = $wpdb->get_col($wpdb->prepare($query, $post_type));
                             $option = get_option('izw_filters_ctf');
                             if( !is_array( $option ) ) $option = array();
                             $query = "SELECT DISTINCT($wpdb->postmeta.meta_key)
@@ -368,10 +421,17 @@ $testListTable->prepare_items();
                     ht_class = '';
                 }
                 ht_lenght = ht_lenght +1;
-                var html = '<tr class="'+ ht_class +'"><th scope="row" class="check-column"><input type="checkbox" name="pid[]" value="'+ ht_lenght +'"></th><td class="field_key column-field_key">'+k+'</td><td class="field_heading column-field_heading"><input type="text" name="izw_filters_ctf['+k+'][heading]" value=""></td><td class="field_placeholder column-field_placeholder"><input type="text" name="izw_filters_ctf['+k+'][placeholder]" value=""></td><td class="field_type column-field_type">            <select name="izw_filters_ctf['+k+'][field_type]">\
-                <option selected="selected" value="text">Text</option>\
-                <option value="select">Dropdown</option>\
-                </select>\
+                var html = '<tr class="'+ ht_class +'">' +
+                    '<th scope="row" class="check-column"><input type="checkbox" name="pid[]" value="'+ ht_lenght +'"></th>' +
+                    '<td class="field_key column-field_key">'+k+'</td>' +
+                    '<td class="field_heading column-field_heading"><input type="text" name="izw_filters_ctf['+k+'][heading]" value=""></td>' +
+                    '<td class="field_placeholder column-field_placeholder"><input type="text" name="izw_filters_ctf['+k+'][placeholder]" value=""></td>' +
+                    '<td class="custom_option column-custom_option"><textarea name="izw_filters_ctf['+ k +'][custom_option]"></textarea></td>' +
+                    '<td class="field_type column-field_type">' +
+                    '<select name="izw_filters_ctf['+k+'][field_type]">\
+                        <option selected="selected" value="text">Text</option>\
+                        <option value="select">Dropdown</option>\
+                    </select>\
                 </td></tr>';
                 $('.wrap tbody').append(html);
                 return false;

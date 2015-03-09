@@ -1,3 +1,6 @@
+.clear{
+    clear: both;;
+}
 .izweb-item {
     display: table;
     float: left;
@@ -217,9 +220,17 @@ h4.box-shadow {
 .filter-item:nth-child(2n-2){
     text-align: right;
 }
-.filter-item:nth-child(1n-1) label{
+.filter-item:nth-child(1n-1) > label{
     display: inline-block;
     width: 164px;
+}
+.izw-radio {
+    display: inline-block;
+    vertical-align: top;
+}
+.izw-row {
+    width: 100%;
+    float: left;
 }
 .izw-select{
     width: auto;
