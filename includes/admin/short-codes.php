@@ -26,6 +26,8 @@ function hh_search_program( $atts ){
                 'excerpt' => $exc
             ), $atts )
     );
+    wirte_text_autocomplete( $key1 );
+    wirte_text_autocomplete( $key2 );
     $search_results = '';
     if(isset( $_REQUEST['izweb-search'] ) ){
 		global $is_search_program;
@@ -242,37 +244,16 @@ function hh_search_program( $atts ){
 							});
                         }
                     });
-                    $( "#<?php echo $key1; ?>" ).autocomplete({
-                        source: function( request, response ) {
-                            var data = {
-                                'action': 'izw_search_ajax',
-                                'meta_key': '<?php echo $key1; ?>',
-                                'meta_value': request.term
-                            };
-
-                            // since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
-                            $.post('<?php echo admin_url( 'admin-ajax.php' ); ?>', data, function(tags) {
-                                response(JSON.parse(tags));
-                            });
-                        },
-                        autoFocus: true,
-                        minLength: 3
+                    var k1;
+                    $.get("<?php echo __IZIPURL__."autocomplete-{$key1}.txt"; ?>", function(data) {
+                        k1 = data.split(',');
+                        $( "#<?php echo $key1; ?>" ).autocomplete({source:k1,autoFocus: true,minLength: 3})
                     });
-                    $( "#<?php echo $key2; ?>" ).autocomplete({
-                        source: function( request, response ) {
-                            var data = {
-                                'action': 'izw_search_ajax',
-                                'meta_key': '<?php echo $key2; ?>',
-                                'meta_value': request.term
-                            };
 
-                            // since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
-                            $.post('<?php echo admin_url( 'admin-ajax.php' ); ?>', data, function(tags) {
-                                response(JSON.parse(tags));
-                            });
-                        },
-                        autoFocus: true,
-                        minLength: 3
+                    var k2;
+                    $.get("<?php echo __IZIPURL__."autocomplete-{$key2}.txt"; ?>", function(data) {
+                        k2 = data.split(',');
+                        $( "#<?php echo $key2; ?>" ).autocomplete({source:k2,autoFocus: true,minLength: 3})
                     });
                 });
             </script>

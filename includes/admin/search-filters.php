@@ -366,7 +366,6 @@ $testListTable->prepare_items();
                                       AND $wpdb->postmeta.meta_key = 'minimum_age'
                                       AND CONVERT(SUBSTRING_INDEX({$wpdb->postmeta}.meta_value,' ',1),UNSIGNED INTEGER) BETWEEN 1 AND 50";
                             $test = $wpdb->get_results( $query_test );
-                            print_r( $test );
                             $meta_keys = $wpdb->get_col($wpdb->prepare($query, $post_type));
                             $option = get_option('izw_filters_ctf');
                             if( !is_array( $option ) ) $option = array();
@@ -399,7 +398,6 @@ $testListTable->prepare_items();
             </div>
         </div>
     </div>
-
     <!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
     <form id="movies-filter" method="post">
         <?php $testListTable->display() ?>

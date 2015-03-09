@@ -522,26 +522,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             global $wpdb;
             $meta_key = $_POST['meta_key'];
             $meta_value = $_POST['meta_value'];
-            $tag1 = array();
-            if( $meta_key == 'condition'){
-                $sql1 = $wpdb->get_results( 'SELECT DISTINCT `meta_value` FROM '.$wpdb->postmeta.' INNER JOIN '.$wpdb->posts.' ON '.$wpdb->posts.'.`ID` = '.$wpdb->postmeta.'.`post_id` AND '.$wpdb->posts.'.`post_status` = "publish"  AND ( '.$wpdb->postmeta.'.meta_key = "condition" OR '.$wpdb->postmeta.'.meta_key = "intervention_name") AND `meta_value` LIKE "%'.$meta_value.'%" LIMIT 5', ARRAY_A );
-            }else{
-                $sql1 = $wpdb->get_results( 'SELECT DISTINCT `meta_value` FROM '.$wpdb->postmeta.' INNER JOIN '.$wpdb->posts.' ON '.$wpdb->posts.'.`ID` = '.$wpdb->postmeta.'.`post_id` AND '.$wpdb->posts.'.`post_status` = "publish"  AND '.$wpdb->postmeta.'.`meta_key` = "'.$meta_key.'" AND '.$wpdb->postmeta.'.`meta_value` LIKE "%'.$meta_value.'%" LIMIT 5', ARRAY_A );
-            }
-            foreach( $sql1 as $rows){
-                if( !empty($rows['meta_value'] ) ) {
-                    $multi = explode("\n", $rows['meta_value']);
-                    if (is_array($multi)) {
-                        foreach($multi as $country) {
-                            if (strpos(strtolower($country), strtolower($meta_value) )!==false)  $tag1[] = trim($country);
-                        }
-                    } else $tag1[] = trim($rows['meta_value']);
-                }
-            }
-            echo json_encode( array_intersect_key(
-                $tag1,
-                array_unique(array_map("StrToLower",$tag1))
-            ) );
+            print_r( get_complete_string( $meta_key, $meta_value ) );
             die();
         }
     }
@@ -574,6 +555,32 @@ add_action( 'after_setup_theme', 'my_ag_child_theme_setup' );
 function my_ag_child_theme_setup() {
    remove_shortcode( 'milestone' );
    add_shortcode('milestone', 'my_nectar_milestone');
+}
+function wirte_text_autocomplete( $meta_key = '' ){
+    global $wpdb;
+    $tag1 = array();
+    if( $meta_key == 'condition'){
+        $sql1 = $wpdb->get_results( 'SELECT DISTINCT `meta_value` FROM '.$wpdb->postmeta.' INNER JOIN '.$wpdb->posts.' ON '.$wpdb->posts.'.`ID` = '.$wpdb->postmeta.'.`post_id` AND '.$wpdb->posts.'.`post_status` = "publish"  AND ( '.$wpdb->postmeta.'.meta_key = "condition" OR '.$wpdb->postmeta.'.meta_key = "intervention_name")', ARRAY_A );
+    }else{
+        $sql1 = $wpdb->get_results( 'SELECT DISTINCT `meta_value` FROM '.$wpdb->postmeta.' INNER JOIN '.$wpdb->posts.' ON '.$wpdb->posts.'.`ID` = '.$wpdb->postmeta.'.`post_id` AND '.$wpdb->posts.'.`post_status` = "publish"  AND '.$wpdb->postmeta.'.`meta_key` = "'.$meta_key.'"', ARRAY_A );
+    }
+    foreach( $sql1 as $rows){
+        if( !empty($rows['meta_value'] ) ) {
+            $multi = explode("\n", $rows['meta_value']);
+            if (is_array($multi)) {
+                foreach($multi as $country) {
+                    $tag1[] = trim($country);
+                }
+            } else $tag1[] = trim($rows['meta_value']);
+        }
+    }
+    $condition =  array_intersect_key(
+        $tag1,
+        array_unique(array_map("StrToLower",$tag1)
+    ) );
+    $fp=fopen(__IZIPPATH__."autocomplete-{$meta_key}.txt","w+");
+    fwrite($fp,implode( ",",$condition ) );
+    fclose($fp);
 }
 /*
 function child_nectar_register_js() {
