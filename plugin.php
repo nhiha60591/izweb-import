@@ -17,11 +17,14 @@ Text Domain: izweb-import
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
-
+define( '__TEXTDOMAIN__', 'izweb-import' );
+define( '__IZIPPATH__', plugin_dir_path( __FILE__ ) );
+define( '__IZIPURL__', plugin_dir_url( __FILE__ ) );
+define( '__DBVERSION', '3.0.7' );
 if ( ! class_exists( 'Izweb_Import' ) ) :
     class Izweb_Import{
         function __construct(){
-            add_action( 'init', array( $this, 'init') );
+            add_action( 'init', array( $this, 'init'), 1 );
             add_action( 'admin_print_scripts', array( $this, 'admin_plugin_scripts' ) );
             add_action( 'wp_enqueue_scripts', array( $this, 'front_plugin_scripts' ), 999 );
             add_action( 'admin_menu', array( $this, 'admin_menu' ) );
@@ -32,7 +35,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             add_action( 'izweb_before_setting_page', array( $this, 'process_import' ) );
             add_filter( 'template_include', array( $this, 'template_include' ), 99 );
             add_action( 'widgets_init', array( $this, 'plugin_widgets_init' ) );
-            add_action( 'init', array( $this, 'register_taxonomy' ) );
+            //add_action( 'init', array( $this, 'register_taxonomy' ) );
             add_filter( 'the_content', array( $this, 'change_content' ), 999 );
             add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 			add_filter( 'posts_where' , array( $this, 'posts_where_statement') );
@@ -42,10 +45,29 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             add_action( 'wp_ajax_izw_search_ajax', array( $this, 'izw_search_ajax' ) );
             add_action( 'wp_ajax_nopriv_izw_search_ajax', array( $this, 'izw_search_ajax' ) );
 
+            //add_action( 'izw_cron_notification', array( $this, 'do_cron_notification' ) );
+
             register_activation_hook( __FILE__, array( $this, 'install' ) );
             register_deactivation_hook( __FILE__, array( $this, 'uninstall' ) );
 		
-        }	
+        }
+        function do_cron_notification(){
+            global $wpdb;
+            $izw_notification = $wpdb->prefix.'subscription';
+            $izw_sort_filter = $wpdb->prefix.'izw_sort_filter';
+            $all_subscription = $wpdb->get_results( "SELECT * FROM `{$izw_notification}`" );
+            foreach( $all_subscription as $u ){
+                $sql = "SELECT COUNT(*) FROM `$izw_sort_filter`
+                WHERE `condition` LIKE '%{$u->search_condition}%'
+                AND `country` LIKE '%{$u->search_country}%'";
+                if( $wpdb->get_var( $sql ) ){
+                    $body = '<h1>Your search notification has update</h1>';
+                    $body .= 'The condition <b>'.$u->search_condition.'</b> in '. $u->search_country . ' have update!';
+                    wp_mail( $u->email, 'Your search notification has update', $body );
+                    $wpdb->delete( $izw_notification, array( 'id'=> $u->id));
+                }
+            }
+        }
 
 		function edit_posts_groupby($groupby) {
 			global $wpdb, $is_search_program;
@@ -91,7 +113,27 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             $this->defines();
             $this->includes();
             $this->register_post_type();
+            $this->register_taxonomy();
             $this->load_plugin_textdomain();
+            if( isset( $_REQUEST['update_sort']) && $_REQUEST['update_sort'] == 'yes'){
+                //update_data_filter();
+                include("update-filters.php");
+                echo "DB_NAME: ",DB_NAME,"<br />";
+                echo "DB_USER: ",DB_USER,"<br />";
+                echo "DB_PASSWORD: ",DB_PASSWORD,"<br />";
+                echo "DB_HOST: ",DB_HOST,"<br />";
+                die();
+            }
+            if( isset( $_REQUEST['update_sort']) && $_REQUEST['update_sort'] == 'update'){
+                $page = $_REQUEST['page'] ? $_REQUEST['page'] : 1;
+                update_data_filter($page);
+                die();
+            }
+            if( isset( $_REQUEST['check_cron']) ){
+                $this->do_cron_notification();
+                die();
+            }
+
         }
 
         /**
@@ -106,10 +148,6 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * Define
          */
         function defines(){
-            define( '__TEXTDOMAIN__', 'izweb-import' );
-            define( '__IZIPPATH__', plugin_dir_path( __FILE__ ) );
-            define( '__IZIPURL__', plugin_dir_url( __FILE__ ) );
-            define( '__DBVERSION', '2.0.4' );
         }
 
         /**
@@ -128,6 +166,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             wp_enqueue_style( 'izweb-import-ui', plugin_dir_url( __FILE__ )."assets/front-end/css/jquery-ui.css" );
             wp_enqueue_script( 'izweb-import-ui', plugin_dir_url( __FILE__ )."assets/front-end/js/jquery-ui.js", array( 'jquery' ) );
             wp_enqueue_script( 'izweb-import-overwrite', plugin_dir_url( __FILE__ )."assets/front-end/js/izw-import.js", array( 'jquery' ), '1.0.0', true );
+            wp_enqueue_script( 'izweb-validate', plugin_dir_url( __FILE__ )."assets/front-end/js/jquery.validate.js", array( 'jquery' ), '1.0.0', true );
         }
 
         /**
@@ -260,6 +299,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             $db_version = get_option( 'izweb_import_db_version');
             if( empty( $db_version ) || version_compare( __DBVERSION, $db_version ) > 0 ){
                 $table = $wpdb->prefix.'remove_posts';
+                $izw_sort_filter = $wpdb->prefix.'izw_sort_filter';
                 $SQL = "CREATE TABLE IF NOT EXISTS `{$table}` (
                           `ID` int(11) NOT NULL AUTO_INCREMENT,
                           `date_import` datetime NOT NULL,
@@ -271,10 +311,43 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                 $alterTable = "ALTER TABLE {$table}
                                ADD file_name varchar(255)";
                 $wpdb->query( $alterTable );
+
+                $SQL2 = "CREATE TABLE IF NOT EXISTS `{$izw_sort_filter}` (
+                          `ID` int(11) NOT NULL AUTO_INCREMENT,
+                          `post_id` int(11) NOT NULL,
+                          `post_status` varchar(255) NOT NULL,
+                          `drug` varchar(255) NOT NULL,
+                          `condition` varchar(255) NOT NULL,
+                          `country` varchar(255) NOT NULL,
+                          `study` int(11) NOT NULL DEFAULT '0',
+                          `gender` varchar(255) NOT NULL,
+                          `min_age` int(11) NOT NULL DEFAULT '0',
+                          `max_age` int(11) NOT NULL DEFAULT '0',
+                          `sponsor` varchar(255) NOT NULL,
+                          PRIMARY KEY (`ID`)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
+
+                $izw_notification = $wpdb->prefix."subscription";
+                $SQL3 = "CREATE TABLE IF NOT EXISTS `{$izw_notification}` (
+                          `id` int(11) NOT NULL AUTO_INCREMENT,
+                          `email` varchar(255) NULL,
+                          `search_condition` varchar(255) NULL,
+                          `search_country` varchar(255) NOT NULL,
+                          `date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                          `device_token` varchar(255) NULL,
+                          `device_type` varchar(255) NULL,
+                          PRIMARY KEY (`ID`)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
                 require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
                 dbDelta( $SQL );
+                dbDelta( $SQL2 );
+                dbDelta( $SQL3 );
                 update_option( 'izweb_import_db_version', __DBVERSION );
             }
+            /**
+             * Cron Job
+             */
+            //wp_schedule_event( time(), 'hourly', 'izw_cron_notification' );
         }
         /**
          * Uninstall Plugin
@@ -379,6 +452,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                                                 update_post_meta( $postid, $field_key, trim( $doc->getElementsByTagName( $field_key )->item(0)->nodeValue ) );
                                                 update_post_meta( $postid, 'izweb_remove_id', $remove_id );
                                             }
+                                            update_data_filter(1, $postid);
                                         }
                                     }
                                     unlink( $folder."/".$f );
@@ -555,32 +629,6 @@ add_action( 'after_setup_theme', 'my_ag_child_theme_setup' );
 function my_ag_child_theme_setup() {
    remove_shortcode( 'milestone' );
    add_shortcode('milestone', 'my_nectar_milestone');
-}
-function wirte_text_autocomplete( $meta_key = '' ){
-    global $wpdb;
-    $tag1 = array();
-    if( $meta_key == 'condition'){
-        $sql1 = $wpdb->get_results( 'SELECT DISTINCT `meta_value` FROM '.$wpdb->postmeta.' INNER JOIN '.$wpdb->posts.' ON '.$wpdb->posts.'.`ID` = '.$wpdb->postmeta.'.`post_id` AND '.$wpdb->posts.'.`post_status` = "publish"  AND ( '.$wpdb->postmeta.'.meta_key = "condition" OR '.$wpdb->postmeta.'.meta_key = "intervention_name")', ARRAY_A );
-    }else{
-        $sql1 = $wpdb->get_results( 'SELECT DISTINCT `meta_value` FROM '.$wpdb->postmeta.' INNER JOIN '.$wpdb->posts.' ON '.$wpdb->posts.'.`ID` = '.$wpdb->postmeta.'.`post_id` AND '.$wpdb->posts.'.`post_status` = "publish"  AND '.$wpdb->postmeta.'.`meta_key` = "'.$meta_key.'"', ARRAY_A );
-    }
-    foreach( $sql1 as $rows){
-        if( !empty($rows['meta_value'] ) ) {
-            $multi = explode("\n", $rows['meta_value']);
-            if (is_array($multi)) {
-                foreach($multi as $country) {
-                    $tag1[] = trim($country);
-                }
-            } else $tag1[] = trim($rows['meta_value']);
-        }
-    }
-    $condition =  array_intersect_key(
-        $tag1,
-        array_unique(array_map("StrToLower",$tag1)
-    ) );
-    $fp=fopen(__IZIPPATH__."autocomplete-{$meta_key}.txt","w+");
-    fwrite($fp,implode( ",",$condition ) );
-    fclose($fp);
 }
 /*
 function child_nectar_register_js() {

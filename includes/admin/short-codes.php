@@ -14,6 +14,7 @@ function hh_search_program( $atts ){
     // Attributes
     $exc = get_option( 'izweb_post_excerpt' );
     $filter_fields = get_option( 'izw_filters_ctf' );
+    $noti_mess = '';
     $exc = !empty($exc) ? $exc : 'brief_summary';
     extract( shortcode_atts(
             array(
@@ -26,152 +27,183 @@ function hh_search_program( $atts ){
                 'excerpt' => $exc
             ), $atts )
     );
-    wirte_text_autocomplete( $key1 );
-    wirte_text_autocomplete( $key2 );
+    wirte_text_autocomplete( 'condition' );
     $search_results = '';
-    if(isset( $_REQUEST['izweb-search'] ) ){
+    $data_search = array(
+        'drug_condition' => @$_REQUEST['drug_condition'],
+        'country' => @$_REQUEST['country'],
+        'study' => @$_REQUEST['study'],
+        'gender' => @$_REQUEST['gender'],
+        'age_group' => @$_REQUEST['age_group'],
+        'sponsor' => @$_REQUEST['sponsor'],
+    );
+    if( isset( $_POST['send_mail']) ){
+        $izw_notification = $wpdb->prefix."subscription";
+        $noti_ID = $wpdb->get_var(
+                        $wpdb->prepare(
+                            "SELECT `ID` FROM `{$izw_notification}`
+                            WHERE `search_condition` = '%s'
+                            AND `search_country` = '%s'
+                            AND `email` = '%s'",
+                            $_POST['noti_condition'],
+                            $_POST['noti_country'],
+                            $_POST['noti_email']
+                        )
+        );
+        if( empty( $noti_ID ) ){
+            $data = array(
+                'search_condition' => $_POST['noti_condition'],
+                'search_country' => $_POST['noti_country'],
+                'date' => date("Y-m-d H:i:s"),
+                'email' => $_POST['noti_email'],
+            );
+            $wpdb->insert( $izw_notification, $data );
+            $noti_mess = "Your notification sent! Thank you for send notification for us.";
+        }
+    }
+    if(isset( $_REQUEST['izw_search'] ) ){
 		global $is_search_program;
         $post_ids = array();
 		$is_search_program = true;
-        $data = array(
-            $key1     => $_REQUEST[$key1],
-            $key2     => $_REQUEST[$key2],
+        $data_search = array(
+            'drug_condition' => @$_REQUEST['drug_condition'],
+            'country' => @$_REQUEST['country'],
+            'study' => @$_REQUEST['study'],
+            'gender' => @$_REQUEST['gender'],
+            'age_group' => @$_REQUEST['age_group'],
+            'sponsor' => @$_REQUEST['sponsor'],
         );
-        $paged = ( get_query_var('paged') ) ? get_query_var('paged') : 1;
-        $args = array(
-            'post_type' => 'program',
-            'post_status' => 'publish',
-            'posts_per_page' => 20,
-            'paged' => $paged
-        );	
-		
-		if (empty($_GET['include_trial'])) {
-			$args['tax_query'] = array(
-									array(
-										'taxonomy' => 'program_cat',
-										'field'    => 'slug',
-										'terms'    => 'exclude-clinical-trials',
-									));
-		}
-		$key_check = array();
-        if( !empty($data[$key1]) ){
-            $key_check[$key1] = $data[$key1];
-            $args['meta_query'][] = array(
-                'key'     => $key1,
-                'value'   => $data[$key1],
-                'compare' => 'LIKE',
-            );
+        $izw_sort_filter = $wpdb->prefix.'izw_sort_filter';
+        $search_sql = 'SELECT `post_id` FROM '.$izw_sort_filter.' WHERE 1=1';
+        $where = '';
+        if( isset( $data_search['drug_condition'] ) && !empty( $data_search['drug_condition'] )){
+            $where .= ' AND ( drug LIKE "%'.$data_search['drug_condition'].'%"';
+            $where .= ' OR condition LIKE "%'.$data_search['drug_condition'].'%" )';
         }
-        if( !empty($data[$key2]) ){
-            $key_check[$key2] = $data[$key2];
-            $args['meta_query'][] = array(
-                'key'     => $key2,
-                'value'   => $data[$key2],
-                'compare' => 'LIKE',
-            );
+
+        if( isset( $data_search['country'] ) && $data_search['country'] != '0'){
+            $where .= ' AND country LIKE "%'.$data_search['country'].'%"';
         }
-        if( sizeof( $filter_fields ) > 0 ){
-            foreach( $filter_fields as $k=>$v ){
-                if( isset( $_REQUEST[$k]) && $_REQUEST[$k] != '' && $_REQUEST[$k] != '0' ){
-                    $key_check[$k] = $_REQUEST[$k];
-                    if( !empty( $v['custom_option'])){
-                        if( $v['between'] == 'yes'){
-                            $list1 = explode( "\n", $v['custom_option'] );
-                            foreach( $list1 as $item){
-                                $list2 = explode( "-", explode( "|", $item ) );
-                                $slq = "SELECT DISTINCT($wpdb->posts.ID)
-                                      FROM $wpdb->posts
-                                      LEFT JOIN $wpdb->postmeta
-                                      ON $wpdb->posts.ID = $wpdb->postmeta.post_id
-                                      WHERE $wpdb->posts.post_type = 'program'
-                                      AND $wpdb->postmeta.meta_key = '{$k}'
-                                      AND CONVERT(SUBSTRING_INDEX({$wpdb->postmeta}.meta_value,' ',1),UNSIGNED INTEGER) BETWEEN {$list2[0]} AND {$list2[1]}";
-                                $post_ids[] = $wpdb->get_col( $slq );
-                                $post_ids = array_unique( $post_ids );
-                                $post_ids = array_filter( $post_ids );
-                            }
-                        }
-                    }
-                    $compare = 'LIKE';
-                    if( $v['field_type'] == 'select' ) $compare = '=';
-                    $args['meta_query'][] = array(
-                        'key'     => $k,
-                        'value'   => $_REQUEST[$k],
-                        'compare' => $compare,
-                    );
-                }
+
+
+        if( isset( $data_search['gender'] ) && $data_search['gender'] != 'Both'){
+            $where .= ' AND gender = "'.$data_search['gender'].'"';
+        }
+        if( isset( $data_search['age_group'] ) && $data_search['age_group'] != '0'){
+            if( strpos( $data_search['age_group'],'-') != FALSE){
+                $bt = explode( '-', $data_search['age_group'] );
+                $where .= ' AND ( min_age BETWEEN '.$bt[0].' AND '.$bt[0].' )';
+            }elseif( strpos( $data_search['age_group'],'+') != FALSE){
+                $bt = explode( '+', $data_search['age_group'] );
+                $where .= ' AND min_age >= '.$bt[0];
             }
         }
-        if( sizeof( $args['meta_query']) >= 2){
-            $args['meta_query']['relation'] = 'AND';
+
+        if( isset( $data_search['sponsor'] ) && !empty( $data_search['sponsor'] )){
+            $where .= 'AND sponsor LIKE "%'.$data_search['sponsor'].'%"';
         }
-        if( sizeof( $post_ids ) > 0){
-            $args['post__in'] = $post_ids;
-        }
-        $args = apply_filters( 'izweb_arg_search', $args );
-        $include = $exclude = 0;
-        $program = new WP_Query( $args );
-        $error = '';
-        $search_results = '';
-        if(!empty( $_GET['include_trial'] )){
-            $include = (int)$program->found_posts - (int)get_eap( $key_check );
-            $exclude = get_eap( $key_check );
+        $exc_count = 0;
+        if( isset( $data_search['study'] ) && $data_search['study'] != '0'){
+            $where .= ' AND study = '.$data_search['study'];
         }else{
-            $exclude = $program->found_posts;
+            $exc = get_term_by( 'name', 'Exclude Clinical Trials', 'program_cat' );
+            $SQL = "SELECT count(*) FROM `{$izw_sort_filter}` WHERE `study` = {$exc->term_id}". $where;
+            $exc_count = $wpdb->get_var( $SQL );
+        }
+        $count_p = $wpdb->get_col( $search_sql.$where );
+        $page = ( get_query_var('paged') ) ? get_query_var('paged') : 1;
+        if( (int)$page < 0 ) $page = 1;
+        $page = ceil($page) - 1;
+        $perpage = 20;
+        $start = $page*$perpage;
+        $post_ids = $wpdb->get_col( $search_sql.$where." ORDER BY `study` DESC LIMIT {$start},{$perpage}" );
+        $search_results = '';
+        if( isset( $data_search['study'] ) && $data_search['study'] != '0'){
+            $exc = get_term_by( 'id', $data_search['study'], 'program_cat' );
+            if( $exc->name == "Exclude Clinical Trials"){
+                $exc_count = count( $count_p );
+            }
         }
         ob_start();
-        if( $program->have_posts() ){
+        if( sizeof( $post_ids ) > 0 ){
             ?>
             <div class="izweb-search-results">
                 <?php dynamic_sidebar('izw-below-search'); ?>
-                <?php while($program->have_posts()): $program->the_post();$terms = wp_get_post_terms( get_the_ID(), 'program_cat', $args ); $termslug = array(); foreach( $terms as $term){ $termslug[] = $term->slug;}  global $post;?>
+                <?php foreach( $post_ids as $id){$post = get_post($id);setup_postdata($post);$terms = wp_get_post_terms( get_the_ID(), 'program_cat' ); $termslug = array(); foreach( $terms as $term){ $termslug[] = $term->slug;}?>
                     <div class="izweb-item <?php echo implode(" ", $termslug ); ?>">
                         <div class="izweb-item-left">
                             <div class="post-title">
                                 <a class="izw-title-link" href="<?php the_permalink(); ?>"><?php echo _substr(get_the_title(), 70); ?></a>
                             </div>
                             <div class="post-content">
-                                <?php do_action( 'izweb_before_search_content', get_the_ID() ); ?>
-                                <?php $exc_text = get_post_meta( get_the_ID(), $excerpt, true ); if( !empty( $exc_text ) ) echo _substr(strip_tags($exc_text, '<p><a>'),300); else echo _substr(strip_tags($post->post_excerpt, '<p><a>'),300); ?>
-                                <?php izweb_show_custom_field( get_the_ID() ); ?>
-                                <?php do_action( 'izweb_after_search_content', get_the_ID() ); ?>
+                                <?php do_action( 'izweb_before_search_content', $id ); ?>
+                                <?php $exc_text = get_post_meta( $id, $excerpt, true ); if( !empty( $exc_text ) ) echo _substr(strip_tags($exc_text, '<p><a>'),300); else echo _substr(strip_tags($post->post_excerpt, '<p><a>'),300); ?>
+                                <?php izweb_show_custom_field( $id ); ?>
+                                <?php do_action( 'izweb_after_search_content', $id ); ?>
                             </div>
                         </div>
                         <div class="izweb-item-right">
                             <a class="izw-detail" href="<?php the_permalink(); ?>">Details</a>
                         </div>
                     </div>
-                <?php endwhile; ?>
+                <?php }; ?>
             </div>
 			<div class="search_pagination">
-            <?php if( function_exists('wp_pagenavi')){
-                wp_pagenavi( array( 'query' => $program) );
-            }else{
-                ?>
-                <?php if( $program->max_num_pages > 1 ){ ?>
-                    <nav class="izweb-pagination">
-                        <?php if( $paged > 1): ?>
-                            <a class="prev" href="<?php echo add_query_arg( array( 'paged'=> $paged-1) ); ?>">Prev</a>
-                        <?php endif; ?>
-                        <?php for( $i=1; $i<=$program->max_num_pages; $i++){ ?>
-                            <?php if( $paged == $i ): ?>
-                                <span class="page-current"><?php echo $i ?></span>
-                            <?php else: ?>
-                                <a href="<?php echo add_query_arg( array( 'paged'=> $i) ); ?>"><?php echo $i ?></a>
-                            <?php endif ?>
-                        <?php } ?>
-                        <?php if( $paged < $program->max_num_pages): ?>
-                            <a class="next" href="<?php echo add_query_arg( array( 'paged'=> $paged+1) ); ?>">Next</a>
-                        <?php endif; ?>
-                    </nav>
-                <?php
-                }
-            }
-			?>
+                <div class="wp-pagenavi">
+                    <?php
+                        $prev_page = (int)$page;
+                        $next_page = (int)$page + 2;
+                        $iz_page = ceil( count( $count_p )/ $perpage);
+                        if( $iz_page > 1 ) {
+                            for ($i = 1; $i <= $iz_page; $i++) {
+                                if ($i == 1 && ($page + 1) != 1) {
+                                    ?>
+                                    <a data-page="<?php echo $i; ?>" class="page larger izw_first"
+                                       href="<?php echo add_query_arg(array('paged' => 1)); ?>">First</a>
+                                    <a data-page="<?php echo $i; ?>" class="page larger izw_prev"
+                                       href="<?php echo add_query_arg(array('paged' => $prev_page)); ?>">Prev</a>
+                                <?php
+                                }
+                                if( (($page+1) - $i) == 3 ){
+                                    ?>
+                                    <span class="izw_more">...</span>
+                                <?php
+                                }elseif(  (($page+1) - $i) <3 && (($page+1) - $i) >0 ){
+                                    ?>
+                                    <a data-page="<?php echo $i; ?>" class="page larger"
+                                       href="<?php echo add_query_arg(array('paged' => $i)); ?>"><?php echo $i; ?></a>
+                                    <?php
+                                }elseif ($i == ($page + 1)) {
+                                    ?>
+                                    <span class="current"><?php echo $i; ?></span>
+                                <?php
+                                }elseif( $i - ($page+1) >0 && $i - ($page+1) <3 ) {
+                                    ?>
+                                    <a data-page="<?php echo $i; ?>" class="page larger"
+                                       href="<?php echo add_query_arg(array('paged' => $i)); ?>"><?php echo $i; ?></a>
+                                    <?php
+                                }elseif( ($i - ($page+1)) == 3){
+                                    ?>
+                                    <span class="izw_more">...</span>
+                                    <?php
+                                }
+                                if ($i == $iz_page && ($page + 1) != $iz_page) {
+                                    ?>
+                                    <a data-page="<?php echo $i; ?>" class="page larger izw_next"
+                                       href="<?php echo add_query_arg(array('paged' => $next_page)); ?>">Next</a>
+                                    <a data-page="<?php echo $i; ?>" class="page larger izw_last"
+                                       href="<?php echo add_query_arg(array('paged' => $iz_page)); ?>">Last</a>
+                                <?php
+                                }
+                            }
+                        }
+                    ?>
+                </div>
 			</div>
 			<?php
             $search_results = ob_get_clean();
-            $found_mes = '<h3 class="izw-found-mes">'.__( "We have found {$exclude} Early Access Programs (green) and {$include} Clinical Trials (red)")."</h3>";
+            $include = count( $count_p ) - $exc_count;
+            $found_mes = '<h3 class="izw-found-mes">'.__( "We have found {$exc_count} Early Access Programs (green) and {$include} Clinical Trials (red)")."</h3>";
             $search_results = $found_mes.$search_results;
         }else{
             ?>
@@ -180,7 +212,26 @@ function hh_search_program( $atts ){
                 <ul class="izw-error-mes-ul">
                     <li>Try other keywords or check your spelling</li>
                     <li>Check the "include available Clinic Trials in search" option</li>
-                    <li>Get notified when we have information for <?php print htmlspecialchars($_REQUEST[$key1]); ?> in <?php print htmlspecialchars($_REQUEST[$key2]); ?> <?php if( function_exists( 'gravity_form')) gravity_form(10, false, false, false, '', false); ?></li>
+                    <li>Get notified when we have information for <strong><?php print htmlspecialchars($data_search['drug_condition']); ?></strong> in <strong><?php print htmlspecialchars($data_search['country']); ?></strong>
+                        <p style="color: green;font-size: 1.4em;"><?php echo $noti_mess; ?></p>
+                        <form name="notification" action="" method="post" id="notification">
+                            <p>
+                                <label for="noti_condition">Condition:</label>
+                                <input type="text" name="noti_condition" id="noti_condition" value="<?php print htmlspecialchars($data_search['drug_condition']); ?>" />
+                            </p>
+                            <p>
+                                <label for="noti_country">Country:</label>
+                                <input type="text" name="noti_country" id="noti_country" value="<?php print htmlspecialchars($data_search['country']); ?>" />
+                            </p>
+                            <p>
+                                <label for="noti_email">Email:</label>
+                                <input type="text" name="noti_email" id="noti_email" value="" />
+                            </p>
+                            <p>
+                                <input type="submit" name="send_mail" value="Send" />
+                            </p>
+                        </form>
+                    </li>
                 </ul>
             </div>
             <?php
@@ -193,67 +244,118 @@ function hh_search_program( $atts ){
     ob_start();
     $key1value = isset($_REQUEST[$key1] ) ? $_REQUEST[$key1] : '';
     $key2value = isset($_REQUEST[$key2] ) ? $_REQUEST[$key2] : '';
+    $countries = izw_all_countries();
     ?>
     <div id="izweb-search" class="izweb-search" style="width: 100%;">
         <div class="izweb-search-form">
             <form name="" action="<?php echo get_the_permalink( $post->ID ); ?>" method="get">
                 <input type="hidden" name="page_id" value="<?php echo @$_REQUEST['page_id']; ?>">
-                <div class="default-form">
-                    <div class="izw-left">
-                        <label for="<?php echo $key1; ?>"><?php _e( $caption1, __TEXTDOMAIN__) ?></label>
-                        <input type="text" name="<?php echo $key1; ?>" id="<?php echo $key1; ?>" value="<?php echo $key1value; ?>" placeholder="<?php echo $placeholder1 ?>" />
-                    </div>
-                    <div class="izw-right">
-                    <label for="<?php echo $key2; ?>"><?php _e( $caption2, __TEXTDOMAIN__) ?></label>
-                        <input type="text" name="<?php echo $key2; ?>" id="<?php echo $key2; ?>" value="<?php echo $key2value; ?>" placeholder="<?php echo $placeholder2 ?>" />
-                        <input type="submit" style="top: 4px;" class="nectar-button large extra-color-1 has-icon regular-button" value="<?php _e( "SEARCH", __TEXTDOMAIN__) ?>" name="izweb-search" data-color-override="false" data-hover-color-override="false" data-hover-text-color-override="#fff" />
-                        <label style="display: block;">include available Clinical Trials in search <input type="checkbox" name="include_trial" value="1" <?php if (!isset($_REQUEST['izweb-search']) || !empty($_REQUEST['include_trial'])) echo 'checked="checked"';?> /></label>
-                    </div>
-                </div>
-                <?php if( sizeof( $filter_fields ) > 0 ): ?>
                 <div class="izw-filter-fields">
                     <div class="izw-row">
-                    <?php $i=1; foreach( $filter_fields as $k=>$v): ?>
                         <div class="filter-item">
-                            <?php echo izw_input_html( $k, $v['field_type'], $v ); ?>
+                            <label for="">Drug or Condition?</label>
+                            <input type="text" name="drug_condition" id="drug_condition" value="<?php echo $data_search['drug_condition']; ?>" placeholder="e.g. Depression" />
                             <div class="clear"></div>
                         </div>
-                        <?php if( $i%2 == 0 ) echo "</div><div class=\"izw-row\">"; ?>
-                    <?php $i++; endforeach; ?>
+                        <div class="filter-item">
+                            <label for="">Country?</label>
+                            <select name="country">
+                                <option value="0">All</option>
+                                <?php foreach( $countries as $v): ?>
+                                    <option <?php selected($data_search['country'], $v); ?> value="<?php echo $v; ?>"><?php echo $v; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <input type="submit" name="izw_search" style="top: 4px;" class="nectar-button large extra-color-1 has-icon regular-button" value="<?php _e( "SEARCH", __TEXTDOMAIN__) ?>" data-color-override="false" data-hover-color-override="false" data-hover-text-color-override="#fff" />
+                            <div class="clear"></div>
+                        </div>
                     </div>
+                    <div class="search_advanced" style="display: none;">
+                        <div class="izw-row">
+                            <div class="filter-item">
+                                <label for="">Study</label>
+                                <p>
+                                    <label><input type="radio" <?php checked($data_search['study'], '0'); ?> name="study" value="0" />Both</label>
+                                    <?php
+                                    $terms = get_terms('program_cat');
+                                    foreach( $terms as $term):
+                                    ?>
+                                        <label><input type="radio" name="study" <?php checked($data_search['study'], $term->name); ?> value="<?php echo $term->term_id; ?>" /><?php echo $term->name; ?></label>
+                                    <?php endforeach; ?>
+                                </p>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="filter-item">
+                                <label for="">Gender</label>
+                                <p>
+                                    <label><input type="radio" <?php checked($data_search['gender'], 'Both'); ?> name="gender" value="Both" />Both</label>
+                                    <label><input type="radio" <?php checked($data_search['gender'], 'Male'); ?> name="gender" value="Male" />Male</label>
+                                    <label><input type="radio" <?php checked($data_search['gender'], 'Female'); ?> name="gender" value="Female" />Female</label>
+                                </p>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+
+                        <div class="izw-row">
+                            <div class="filter-item">
+                                <label for="">Age Group</label>
+                                <p>
+                                    <label><input type="radio" <?php checked($data_search['age_group'], '0'); ?> name="age_group" value="0" />Any</label>
+                                    <label><input type="radio" <?php checked($data_search['age_group'], '0-17'); ?> name="age_group" value="0-17" />Child (0-17)</label>
+                                    <label><input type="radio" <?php checked($data_search['age_group'], '18-65'); ?> name="age_group" value="18-65" />Adult (18-65)</label>
+                                    <label><input type="radio" <?php checked($data_search['age_group'], '65+'); ?> name="age_group" value="65+" />Senior (65+)</label>
+                                </p>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="filter-item">
+                                <label for="">Sponsor</label>
+                                <input type="text" name="sponsor" value="<?php echo $data_search['sponsor']; ?>" />
+                                <input type="submit" name="izw_search" style="top: 4px;" class="nectar-button large extra-color-1 has-icon regular-button" value="<?php _e( "SEARCH", __TEXTDOMAIN__) ?>" data-color-override="false" data-hover-color-override="false" data-hover-text-color-override="#fff" />
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+                    </div><!-- END .search_advanced -->
+                    <p style="text-align: right;">
+                        <a href="#" class="show_advanced">Advanced Search</a>
+                    </p>
                     <div class="clear" style="clear: both;"></div>
                 </div>
-                <?php endif; ?>
             </form>
             <script type="text/javascript">
                 jQuery(document).ready(function( $ ){
-                    $(".izweb-item.include-clinical-trials").hide();
-                    <?php if (!empty($_REQUEST['include_trial'])) {?>
-                    $(".izweb-item.include-clinical-trials").show();
-                    <?php }?>
-                    $('input[name="include_trial"]').change(function (){
-                        if($(this).is(":checked")){
-                            $(".izweb-item.include-clinical-trials").show();
-							$(".search_pagination a").each(function(){
-								 this.href += "&include_trial=1";
-							});
-                        }else{
-                            $(".izweb-item.include-clinical-trials").hide();
-							$(".search_pagination a").each(function(){
-								this.href = this.href.replace("&include_trial=1", "");								 
-							});
-                        }
-                    });
                     var k1;
                     $.get("<?php echo __IZIPURL__."autocomplete-{$key1}.txt"; ?>", function(data) {
                         k1 = data.split(',');
-                        $( "#<?php echo $key1; ?>" ).autocomplete({source:k1,autoFocus: true,minLength: 3})
+                        $( "#drug_condition" ).autocomplete({source:k1,autoFocus: true,minLength: 3})
                     });
-
-                    var k2;
-                    $.get("<?php echo __IZIPURL__."autocomplete-{$key2}.txt"; ?>", function(data) {
-                        k2 = data.split(',');
-                        $( "#<?php echo $key2; ?>" ).autocomplete({source:k2,autoFocus: true,minLength: 3})
+                    $(".page-1").show();
+                    $(".search_pagination .wp-pagenavi a").click(function(){
+                        $(".izweb-item").hide();
+                        var page = $(this).data('page');
+                        $(".page-"+page).show();
+                        $(".search_pagination .wp-pagenavi a").removeClass('active');
+                        $(this).addClass('active');
+                    });
+                    $("a.show_advanced").click(function(){
+                        $(".search_advanced").toggle("slow");
+                        return false;
+                    });
+                    $("#notification").validate({
+                        rules: {
+                            noti_condition: "required",
+                            noti_country: "required",
+                            noti_email: {
+                                required: true,
+                                email: true
+                            }
+                        },
+                        messages: {
+                            noti_condition: "Please enter your condition",
+                            noti_country: "Please enter your country",
+                            noti_email: {
+                                required: "Please enter a email",
+                                email: "Please enter a valid email address"
+                            }
+                        }
                     });
                 });
             </script>

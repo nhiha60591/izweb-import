@@ -74,6 +74,18 @@
 .izweb-item .izweb-list-fields ul li span.izweb-field-value{
     display: table-cell;
 }
+label.error {
+    color: red;
+    display: inline-block;
+    margin-left: 20px;
+}
+input.error {
+    border: 1px solid red;
+}
+#notification label {
+    display: inline-block;
+    width: 100px;
+}
 .izweb-item .alr{
     text-align: right;
 }
@@ -179,8 +191,19 @@ nav.izweb-pagination a,.wp-pagenavi a {
     font-weight: bold;
     border: none;
 }
+nav.izweb-pagination a.active,.wp-pagenavi a.active{
+    background: #999999;
+}
 nav.izweb-pagination a:hover, .wp-pagenavi a:hover{
     background: #999999;
+}
+span.current{
+    text-decoration: none;
+    padding: 5px 10px;
+    background: #999999;
+    color: #FFFFFF;
+    font-weight: bold;
+    border: none;
 }
 h4.box-shadow {
     /*box-shadow: 3px 3px 5px #888;*/
@@ -223,6 +246,9 @@ h4.box-shadow {
 .filter-item:nth-child(1n-1) > label{
     display: inline-block;
     width: 164px;
+}
+.filter-item select{
+    width: 30% !important;
 }
 .izw-radio {
     display: inline-block;
