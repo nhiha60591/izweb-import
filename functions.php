@@ -103,29 +103,36 @@ function search_link( $short_code = ''){
  */
 function wirte_text_autocomplete( $meta_key = '' ){
     global $wpdb;
+    $izw_sort_filter = $wpdb->prefix.'izw_sort_filter';
     $tag1 = array();
-    if( $meta_key == 'condition'){
-        $sql1 = $wpdb->get_results( 'SELECT DISTINCT `meta_value` FROM '.$wpdb->postmeta.' INNER JOIN '.$wpdb->posts.' ON '.$wpdb->posts.'.`ID` = '.$wpdb->postmeta.'.`post_id` AND '.$wpdb->posts.'.`post_status` = "publish"  AND ( '.$wpdb->postmeta.'.meta_key = "condition" OR '.$wpdb->postmeta.'.meta_key = "intervention_name")', ARRAY_A );
-    }else{
-        $sql1 = $wpdb->get_results( 'SELECT DISTINCT `meta_value` FROM '.$wpdb->postmeta.' INNER JOIN '.$wpdb->posts.' ON '.$wpdb->posts.'.`ID` = '.$wpdb->postmeta.'.`post_id` AND '.$wpdb->posts.'.`post_status` = "publish"  AND '.$wpdb->postmeta.'.`meta_key` = "'.$meta_key.'"', ARRAY_A );
-    }
+    $sql1 = $wpdb->get_results( 'SELECT DISTINCT `condition`,`drug` FROM '.$izw_sort_filter.'', ARRAY_A );
     foreach( $sql1 as $rows){
-        if( !empty($rows['meta_value'] ) ) {
-            $multi = explode("\n", $rows['meta_value']);
-            if (is_array($multi)) {
-                foreach($multi as $country) {
-                    $tag1[] = trim($country);
-                }
-            } else $tag1[] = trim($rows['meta_value']);
+        if( !empty($rows['condition'] ) ) {
+            $tag1[] = $rows['condition'];
+        }
+        if( !empty($rows['drug'] ) ) {
+            $tag1[] = $rows['drug'];
         }
     }
     $condition =  array_intersect_key(
         $tag1,
-        array_unique(array_map("StrToLower",$tag1)
+        array_unique(array_map("hh_replace_text",$tag1)
         ) );
     $fp=fopen(__IZIPPATH__."autocomplete-{$meta_key}.txt","w+");
-    fwrite($fp,implode( ",",$condition ) );
+    fwrite($fp,implode( ",",array_map( 'hh_replace_text2', $condition ) ) );
     fclose($fp);
+}
+function hh_replace_text( $text ){
+    $str = str_replace( "-", " ", strtolower( $text ), $count );
+    if( $count >= 1)
+        return $str;
+    return strtolower( $text );
+}
+function hh_replace_text2( $text ){
+    $str = str_replace( "-", " ", strtolower( $text ), $count );
+    if( $count >= 1)
+        return ucwords( str_replace( "-", " ", strtolower( $text ) ) );
+    return $text;
 }
 function update_data_filter($page = 1, $post_id = 0 ){
     global $wpdb;
@@ -228,70 +235,183 @@ function izw_all_countries(){
     $countries = array (
         'United States',
         'United Kingdom',
+        'Denmark',
+        'France',
+        'Germany',
+        'Italy',
+        'Netherlands',
+        'Russia',
+        'Spain',
+        'Sweden',
+        'Afghanistan',
+        'Albania',
         'Algeria',
+        'Angola',
         'Argentina',
+        'Armenia',
         'Australia',
         'Austria',
+        'Azerbaijan',
+        'Bahrain',
+        'Bangladesh',
+        'Barbados',
+        'Belarus',
         'Belgium',
+        'Benin',
+        'Bhutan',
+        'Bolivia',
+        'Bosnia and Herzegovina',
+        'Botswana',
         'Brazil',
+        'Brunei Darussalam',
         'Bulgaria',
         'Bulgary',
+        'Burkina Faso',
+        'Burundi',
+        'Cambodia',
+        'Cameroon',
         'Canada',
+        'Central African Republic',
         'Chile',
         'China',
         'Colombia',
+        'Congo',
+        'Costa Rica',
+        'Côte D\'Ivoire',
         'Croatia',
+        'Cuba',
         'Cyprus',
         'Czech Republic',
         'Denmark',
+        'Djibouti',
+        'Dominican Republic',
+        'Ecuador',
         'Egypt',
+        'El Salvador',
         'Estonia',
+        'Ethiopia',
+        'Fiji',
         'Finland',
+        'Former Serbia and Montenegro',
         'France',
+        'Gabon',
+        'Gambia',
+        'Georgia',
         'Germany',
+        'Ghana',
         'Greece',
+        'Guadeloupe',
+        'Guatemala',
+        'Guinea',
+        'Guinea-Bissau',
+        'Haiti',
+        'Holy See (Vatican City State)',
+        'Honduras',
         'Hong Kong',
         'Hungary',
         'Iceland',
         'India',
+        'Indonesia',
+        'Iran',
         'Ireland',
         'Israel',
         'Italy',
+        'Jamaica',
         'Japan',
+        'Jordan',
+        'Kazakhstan',
+        'Kenya',
         'Korea',
+        'Kosovo',
         'Kuwait',
+        'Kyrgyzstan',
+        'Lao People\'s Democratic Republic',
         'Latvia',
+        'Lebanon',
+        'Lesotho',
+        'Liberia',
+        'Libyan Arab Jamahiriya',
         'Liechtenstein',
         'Lithuania',
         'Luxembourg',
+        'Macedonia',
+        'Madagascar',
+        'Malawi',
         'Malaysia',
+        'Mali',
         'Malta',
+        'Martinique',
+        'Mauritius',
         'Mexico',
+        'Moldova',
+        'Monaco',
+        'Mongolia',
+        'Montenegro',
+        'Montserrat',
         'Morocco',
+        'Mozambique',
+        'Myanmar',
+        'Nepal',
         'Netherlands',
+        'Netherlands Antilles',
         'New Zealand',
+        'Niger',
+        'Nigeria',
         'Norway',
+        'Oman',
+        'Pakistan',
+        'Panama',
+        'Papua New Guinea',
+        'Paraguay',
+        'Peru',
+        'Philippines',
         'Poland',
         'Portugal',
+        'Puerto Rico',
+        'Qatar',
+        'Réunion',
         'Romania',
         'Russia',
+        'Russian Federation',
+        'Rwanda',
         'Saudi Arabia',
+        'Senegal',
         'Serbia',
+        'Sierra Leone',
         'Singapore',
         'Slovakia',
         'Slovenia',
+        'Solomon Islands',
         'South Africa',
         'Spain',
+        'Sri Lanka',
+        'Sudan',
+        'Suriname',
+        'Swaziland',
         'Sweden',
         'Switzerland',
+        'Syrian Arab Republic',
         'Taiwan',
+        'Tanzania',
         'Thailand',
+        'The Netherlands',
+        'Togo',
+        'Trinidad and Tobago',
         'Tunisia',
         'Turkey',
+        'Uganda',
         'Ukraine',
         'United Arab Emirates',
-        'Venezuela'
-    );
+        'United Kingdom',
+        'Uruguay',
+        'Uzbekistan',
+        'Vanuatu',
+        'Venezuela',
+        'Vietnam',
+        'Virgin Islands (U.S.)',
+        'Zambia',
+        'Zimbabwe',
+        );
     return apply_filters( 'izw_all_countries', $countries );
 }
 function curPageURL() {

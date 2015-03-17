@@ -27,7 +27,6 @@ function hh_search_program( $atts ){
                 'excerpt' => $exc
             ), $atts )
     );
-    wirte_text_autocomplete( 'condition' );
     $search_results = '';
     $data_search = array(
         'drug_condition' => @$_REQUEST['drug_condition'],
@@ -77,8 +76,8 @@ function hh_search_program( $atts ){
         $search_sql = 'SELECT `post_id` FROM '.$izw_sort_filter.' WHERE 1=1';
         $where = '';
         if( isset( $data_search['drug_condition'] ) && !empty( $data_search['drug_condition'] )){
-            $where .= ' AND ( drug LIKE "%'.$data_search['drug_condition'].'%"';
-            $where .= ' OR condition LIKE "%'.$data_search['drug_condition'].'%" )';
+            $where .= ' AND ( `drug` LIKE "%'.$data_search['drug_condition'].'%"';
+            $where .= ' OR `condition` LIKE "%'.$data_search['drug_condition'].'%" )';
         }
 
         if( isset( $data_search['country'] ) && $data_search['country'] != '0'){
@@ -125,6 +124,13 @@ function hh_search_program( $atts ){
             }
         }
         ob_start();
+        ?>
+        <script type="text/javascript">
+            <?php foreach( $data_search as $k=>$v): if( empty( $v ) ) continue; ?>
+            _gaq.push(['_trackEvent', 'common-web', 'search', '<?php echo $k; ?>']);
+            <?php endforeach; ?>
+        </script>
+        <?php
         if( sizeof( $post_ids ) > 0 ){
             ?>
             <div class="izweb-search-results">
@@ -217,11 +223,11 @@ function hh_search_program( $atts ){
                         <form name="notification" action="" method="post" id="notification">
                             <p>
                                 <label for="noti_condition">Condition:</label>
-                                <input type="text" name="noti_condition" id="noti_condition" value="<?php print htmlspecialchars($data_search['drug_condition']); ?>" />
+                                <input type="text" name="noti_condition" id="noti_condition" value="<?php print str_replace("\'", "'", $data_search['drug_condition']); ?>" />
                             </p>
                             <p>
                                 <label for="noti_country">Country:</label>
-                                <input type="text" name="noti_country" id="noti_country" value="<?php print htmlspecialchars($data_search['country']); ?>" />
+                                <input type="text" name="noti_country" id="noti_country" value="<?php print str_replace("\'", "'", $data_search['country'] ); ?>" />
                             </p>
                             <p>
                                 <label for="noti_email">Email:</label>
@@ -254,7 +260,7 @@ function hh_search_program( $atts ){
                     <div class="izw-row">
                         <div class="filter-item">
                             <label for="">Drug or Condition?</label>
-                            <input type="text" name="drug_condition" id="drug_condition" value="<?php echo $data_search['drug_condition']; ?>" placeholder="e.g. Depression" />
+                            <input type="text" name="drug_condition" id="drug_condition" value="<?php print htmlspecialchars( str_replace("\'", "'", $data_search['drug_condition'])); ?>" placeholder="e.g. Depression" />
                             <div class="clear"></div>
                         </div>
                         <div class="filter-item">
@@ -262,7 +268,7 @@ function hh_search_program( $atts ){
                             <select name="country">
                                 <option value="0">All</option>
                                 <?php foreach( $countries as $v): ?>
-                                    <option <?php selected($data_search['country'], $v); ?> value="<?php echo $v; ?>"><?php echo $v; ?></option>
+                                    <option <?php selected(  str_replace("\'", "'",$data_search['country']),  str_replace("\'", "'",$v)); ?> value="<?php echo $v; ?>"><?php echo $v; ?></option>
                                 <?php endforeach; ?>
                             </select>
                             <input type="submit" name="izw_search" style="top: 4px;" class="nectar-button large extra-color-1 has-icon regular-button" value="<?php _e( "SEARCH", __TEXTDOMAIN__) ?>" data-color-override="false" data-hover-color-override="false" data-hover-text-color-override="#fff" />
@@ -274,7 +280,7 @@ function hh_search_program( $atts ){
                             <div class="filter-item">
                                 <label for="">Study</label>
                                 <p>
-                                    <label><input type="radio" <?php checked($data_search['study'], '0'); ?> name="study" value="0" />Both</label>
+                                    <!--<label><input type="radio" <?php /*if( empty( $data_search['study'] ) || $data_search['study'] == '0' ) echo 'checked=""'; */?> name="study" value="0" />Both</label>-->
                                     <?php
                                     $terms = get_terms('program_cat');
                                     foreach( $terms as $term):
@@ -285,11 +291,13 @@ function hh_search_program( $atts ){
                                 <div class="clear"></div>
                             </div>
                             <div class="filter-item">
-                                <label for="">Gender</label>
+                                <label for="gender">Gender</label>
                                 <p>
-                                    <label><input type="radio" <?php checked($data_search['gender'], 'Both'); ?> name="gender" value="Both" />Both</label>
-                                    <label><input type="radio" <?php checked($data_search['gender'], 'Male'); ?> name="gender" value="Male" />Male</label>
-                                    <label><input type="radio" <?php checked($data_search['gender'], 'Female'); ?> name="gender" value="Female" />Female</label>
+                                    <select name="gender" id="gender">
+                                        <option value="Both">Both</option>
+                                        <option <?php selected($data_search['gender'], 'Male'); ?> value="Male">Male</option>
+                                        <option <?php selected($data_search['Female'], 'Male'); ?> value="Female">Female</option>
+                                    </select>
                                 </p>
                                 <div class="clear"></div>
                             </div>
@@ -299,7 +307,7 @@ function hh_search_program( $atts ){
                             <div class="filter-item">
                                 <label for="">Age Group</label>
                                 <p>
-                                    <label><input type="radio" <?php checked($data_search['age_group'], '0'); ?> name="age_group" value="0" />Any</label>
+                                    <label><input type="radio" <?php if( empty( $data_search['age_group'] ) || $data_search['age_group'] == '0' ) echo 'checked=""'; ?> name="age_group" value="0" />Any</label>
                                     <label><input type="radio" <?php checked($data_search['age_group'], '0-17'); ?> name="age_group" value="0-17" />Child (0-17)</label>
                                     <label><input type="radio" <?php checked($data_search['age_group'], '18-65'); ?> name="age_group" value="18-65" />Adult (18-65)</label>
                                     <label><input type="radio" <?php checked($data_search['age_group'], '65+'); ?> name="age_group" value="65+" />Senior (65+)</label>
@@ -307,8 +315,8 @@ function hh_search_program( $atts ){
                                 <div class="clear"></div>
                             </div>
                             <div class="filter-item">
-                                <label for="">Sponsor</label>
-                                <input type="text" name="sponsor" value="<?php echo $data_search['sponsor']; ?>" />
+                                <!--<label for="">Sponsor</label>
+                                <input type="text" name="sponsor" value="<?php /*print htmlspecialchars( str_replace("\'", "'",  $data_search['sponsor'])); */?>" />-->
                                 <input type="submit" name="izw_search" style="top: 4px;" class="nectar-button large extra-color-1 has-icon regular-button" value="<?php _e( "SEARCH", __TEXTDOMAIN__) ?>" data-color-override="false" data-hover-color-override="false" data-hover-text-color-override="#fff" />
                                 <div class="clear"></div>
                             </div>

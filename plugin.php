@@ -116,6 +116,8 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             $this->register_taxonomy();
             $this->load_plugin_textdomain();
             if( isset( $_REQUEST['update_sort']) && $_REQUEST['update_sort'] == 'yes'){
+                wirte_text_autocomplete( 'condition' );
+                die();
                 //update_data_filter();
                 include("update-filters.php");
                 echo "DB_NAME: ",DB_NAME,"<br />";
@@ -466,6 +468,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                         }
                     }
                 }
+                wirte_text_autocomplete( 'condition' );
                 do_action( "izweb_after_process_import" );
             }
         }
