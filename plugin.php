@@ -9,7 +9,7 @@
 Plugin Name: Izweb Import Plugin
 Plugin URI: https://github.com/nhiha60591/izweb-import/
 Description: Import File from zip file
-Version: 2.0.1
+Version: 2.0.2
 Author: Izweb Team
 Author URI: https://github.com/nhiha60591
 Text Domain: izweb-import
