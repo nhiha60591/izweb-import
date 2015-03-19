@@ -2,10 +2,17 @@
 <project version="4">
   <component name="PublishConfigData">
     <serverData>
+      <paths name="MyMotorrow New">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/domains/mytomorrows.com/public_html/sandbox" local="$PROJECT_DIR$/../../.." web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="mymotorrow">
         <serverdata>
           <mappings>
-            <mapping deploy="/domains/mytomorrows.com/public_html/sandbox/wp-content/plugins/izweb-import" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/domains/mytomorrows.com/public_html/sandbox" local="$PROJECT_DIR$/../../.." web="/" />
           </mappings>
         </serverdata>
       </paths>

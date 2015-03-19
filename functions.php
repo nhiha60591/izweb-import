@@ -101,32 +101,32 @@ function search_link( $short_code = ''){
  *
  * @param string $meta_key
  */
-function wirte_text_autocomplete( $meta_key = '' ){
+function wirte_text_autocomplete( $meta_key = '', $page = 1 ){
     global $wpdb;
     $izw_sort_filter = $wpdb->prefix.'izw_sort_filter';
     $tag1 = array();
-    $sql1 = $wpdb->get_results( 'SELECT DISTINCT `condition`,`drug` FROM '.$izw_sort_filter.'', ARRAY_A );
+    $start = ((int)$page - 1) * 50;
+    $SQL = "SELECT DISTINCT B.meta_value FROM (select ID,post_type from {$wpdb->posts} where post_type = 'program') A INNER JOIN (select meta_value, meta_key,post_id from {$wpdb->postmeta} WHERE meta_key = 'condition') B ON A.ID = B.post_id LIMIT {$start},50";
+    $sql1 = $wpdb->get_results( $SQL, ARRAY_A );
     foreach( $sql1 as $rows){
-        if( !empty($rows['condition'] ) ) {
-            $tag1[] = $rows['condition'];
-        }
-        if( !empty($rows['drug'] ) ) {
-            $tag1[] = $rows['drug'];
+        if( !empty( $rows['meta_value'])){
+            $tag1[] = $rows['meta_value'];
         }
     }
+
     $condition =  array_intersect_key(
         $tag1,
         array_unique(array_map("hh_replace_text",$tag1)
         ) );
-    $fp=fopen(__IZIPPATH__."autocomplete-{$meta_key}.txt","w+");
-    fwrite($fp,implode( ",",array_map( 'hh_replace_text2', $condition ) ) );
+    $fp=fopen(__IZIPPATH__."autocomplete-{$meta_key}.txt","a+") or die( "Do not open file");
+    fwrite($fp,implode( ",", $tag1  )."," );
     fclose($fp);
 }
 function hh_replace_text( $text ){
-    $str = str_replace( "-", " ", strtolower( $text ), $count );
+    $str = strtolower( str_replace( "-", " ", $text, $count ) );
     if( $count >= 1)
-        return $str;
-    return strtolower( $text );
+        return trim( $str  );
+    return trim( $text );
 }
 function hh_replace_text2( $text ){
     $str = str_replace( "-", " ", strtolower( $text ), $count );
@@ -424,4 +424,20 @@ function curPageURL() {
         $pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
     }
     return $pageURL;
+}
+function hh_update_autocomplete_file( $meta_key = 'condition'){
+    echo "<pre>";
+    $content = file_get_contents( __IZIPURL__."autocomplete-{$meta_key}.txt");
+    $tag1 = explode( ",", $content );
+    $condition =  array_intersect_key(
+        $tag1,
+        array_unique(array_map("hh_replace_text",$tag1)
+        ) );
+    $condition = array_intersect_key(
+        $tag1,
+        array_unique(array_map("hh_replace_text2",$condition)
+        ) );
+    $fp=fopen(__IZIPPATH__."autocomplete-{$meta_key}.txt","w+") or die( "Do not open file");
+    fwrite($fp,implode( ",", $condition  ) );
+    fclose($fp);
 }

@@ -56,9 +56,26 @@
         var izw_page = 1;
         <?php global $wpdb; ?>
         <?php
-            $posts = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE `post_type` = 'program'");
+            $url = '';
+            $posts = 0;
+            $all_page = 0;
+            if( isset($_REQUEST['type']) ){
+                switch( $_REQUEST['type']){
+                    case "post":
+                        $url = add_query_arg( array( 'update_sort' => 'update'), home_url() );
+                        $posts = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE `post_type` = 'program'");
+                        $all_page = $posts / 10;
+                    break;
+                    case "complete":
+                        $izw_sort_filter = $wpdb->prefix.'izw_sort_filter';
+                        $url = add_query_arg( array( 'update_auto_complete' => 'yes'), home_url() );
+                        $posts = $wpdb->get_var( "SELECT COUNT( distinct `meta_value`) FROM {$wpdb->postmeta} WHERE `{$wpdb->posts}`.ID = `{$wpdb->postmeta}`.post_id AND `{$wpdb->posts}`.post_type = 'program'");
+                        $all_page = $posts / 50;
+                    break;
+                }
+            }
         ?>
-        var all_page = <?php echo ceil( $posts/10 ); ?>;
+        var all_page = <?php echo ceil( $all_page ); ?>;
         var precent = (izw_page * 100) / all_page ;
         function ajaxFunction()
         {
@@ -67,7 +84,7 @@
                 jQuery(".completed").html( '100' );
             }
             if( izw_page > all_page ) return;
-            $.ajax( "<?php echo add_query_arg( array( 'update_sort' => 'update'), home_url() ); ?>&page="+izw_page )
+            $.ajax( "<?php echo $url; ?>&page="+izw_page )
                 .done(function() {
                     if( izw_page <= all_page ){
                         var pr = Math.round10( (precent * izw_page), -2 );

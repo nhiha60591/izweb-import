@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( '__TEXTDOMAIN__', 'izweb-import' );
 define( '__IZIPPATH__', plugin_dir_path( __FILE__ ) );
 define( '__IZIPURL__', plugin_dir_url( __FILE__ ) );
-define( '__DBVERSION', '3.0.7' );
+define( '__DBVERSION', '3.0.8' );
 if ( ! class_exists( 'Izweb_Import' ) ) :
     class Izweb_Import{
         function __construct(){
@@ -30,8 +30,6 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             add_action( 'admin_menu', array( $this, 'admin_menu' ) );
             add_action( 'izw_tab_import', array( $this, 'import_tab_import' ) );
             add_action( 'izw_tab_select-option', array( $this, 'import_tab_select_option' ) );
-            add_action( 'wp_ajax_load_same_data', array( $this, 'load_same_data' ) );
-            add_action( 'wp_ajax_nopriv_load_same_data', array( $this, 'load_same_data' ) );
             add_action( 'izweb_before_setting_page', array( $this, 'process_import' ) );
             add_filter( 'template_include', array( $this, 'template_include' ), 99 );
             add_action( 'widgets_init', array( $this, 'plugin_widgets_init' ) );
@@ -116,14 +114,14 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             $this->register_taxonomy();
             $this->load_plugin_textdomain();
             if( isset( $_REQUEST['update_sort']) && $_REQUEST['update_sort'] == 'yes'){
-                wirte_text_autocomplete( 'condition' );
+                //include("update-filters.php");
+                $this->izw_search_ajax();
                 die();
-                //update_data_filter();
-                include("update-filters.php");
-                echo "DB_NAME: ",DB_NAME,"<br />";
-                echo "DB_USER: ",DB_USER,"<br />";
-                echo "DB_PASSWORD: ",DB_PASSWORD,"<br />";
-                echo "DB_HOST: ",DB_HOST,"<br />";
+            }
+            if( isset( $_REQUEST['update_auto_complete'] ) && $_REQUEST['update_auto_complete'] == 'yes' ){
+                $page = $_REQUEST['page'] ? $_REQUEST['page'] : 1;
+                //wirte_text_autocomplete( 'condition', $page );
+                hh_update_autocomplete_file();
                 die();
             }
             if( isset( $_REQUEST['update_sort']) && $_REQUEST['update_sort'] == 'update'){
@@ -597,9 +595,20 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          */
         function izw_search_ajax(){
             global $wpdb;
-            $meta_key = $_POST['meta_key'];
-            $meta_value = $_POST['meta_value'];
-            print_r( get_complete_string( $meta_key, $meta_value ) );
+
+            $sql = "SELECT DISTINCT B.meta_value FROM "
+                . "(select ID,post_type from {$wpdb->posts} "
+                . "where post_type = 'program') A "
+                . "INNER JOIN (select meta_value, meta_key,post_id from {$wpdb->postmeta} WHERE meta_key = 'condition') B "
+                . "ON A.ID = B.post_id";
+            $results = $wpdb->get_col($sql);
+            $conditions =  array_intersect_key(
+                $results,
+                array_unique(
+                    array_map( "hh_replace_text", $results )
+                )
+            );
+            echo implode( ",", $conditions );
             die();
         }
     }

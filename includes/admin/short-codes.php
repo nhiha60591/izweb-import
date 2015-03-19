@@ -330,9 +330,18 @@ function hh_search_program( $atts ){
             </form>
             <script type="text/javascript">
                 jQuery(document).ready(function( $ ){
-                    var k1;
+                    /*var k1;
                     $.get("<?php echo __IZIPURL__."autocomplete-{$key1}.txt"; ?>", function(data) {
                         k1 = data.split(',');
+                        $( "#drug_condition" ).autocomplete({source:k1,autoFocus: true,minLength: 3})
+                    });*/
+                    var data = {
+                        'action': 'izw_search_ajax'
+                    };
+
+                    // since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
+                    $.post('<?php echo admin_url( 'admin-ajax.php' ); ?>', data, function(response) {
+                        k1 = response.split(',');
                         $( "#drug_condition" ).autocomplete({source:k1,autoFocus: true,minLength: 3})
                     });
                     $(".page-1").show();
