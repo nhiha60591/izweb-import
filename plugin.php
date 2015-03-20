@@ -114,7 +114,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             $this->register_taxonomy();
             $this->load_plugin_textdomain();
             if( isset( $_REQUEST['update_sort']) && $_REQUEST['update_sort'] == 'yes'){
-                //include("update-filters.php");
+                include("update-filters.php");
                 $this->izw_search_ajax();
                 die();
             }
