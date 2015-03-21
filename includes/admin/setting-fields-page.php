@@ -61,10 +61,10 @@
                                 <div class="locked-indicator"></div>
                             </th>
                             <td>
-                                <input type="text" name="field-item[<?php echo $row; ?>]" value="<?php echo $row; ?>" />
+                                <input type="text" name="field-item[<?php echo $row; ?>]" value="<?php echo stripslashes( $row ); ?>" />
                             </td>
                             <td>
-                                <input type="text" name="field-caption[<?php echo $i; ?>]" value="<?php echo $caption[$i]; ?>" />
+                                <input type="text" name="field-caption[<?php echo $i; ?>]" value="<?php echo stripslashes( $caption[$i] ); ?>" />
                             </td>
                             <td>
                                 <?php echo get_same_data( $row ); ?>
@@ -90,15 +90,15 @@
                     <?php do_action( 'izweb_before_main_fields' ); ?>
                     <tr>
                         <th><label form="post_title"><?php _e( "Post title", __TEXTDOMAIN__ ); ?></label></th>
-                        <td><input type="text" name="post_title" id="post_title" value="<?php echo @$post_title; ?>"></td>
+                        <td><input type="text" name="post_title" id="post_title" value="<?php echo (@$post_title); ?>"></td>
                     </tr>
                     <tr>
                         <th><label form="post_title"><?php _e( "Post Excerpt", __TEXTDOMAIN__ ); ?></label></th>
-                        <td><input type="text" name="post_excerpt" id="post_excerpt" value="<?php echo @$post_excerpt; ?>"></td>
+                        <td><input type="text" name="post_excerpt" id="post_excerpt" value="<?php echo stripslashes(@$post_excerpt); ?>"></td>
                     </tr>
                     <tr>
                         <th><label form="post_content"><?php _e( "Post content", __TEXTDOMAIN__ ); ?></label></th>
-                        <td><textarea name="post_content" cols="40" rows="8" id="post_content"><?php echo @$post_content; ?></textarea></td>
+                        <td><textarea name="post_content" cols="40" rows="8" id="post_content"><?php echo stripslashes(@$post_content); ?></textarea></td>
                     </tr>
                     <?php do_action( 'izweb_after_main_fields' ); ?>
                 </tbody>

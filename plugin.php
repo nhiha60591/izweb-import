@@ -9,7 +9,7 @@
 Plugin Name: Izweb Import Plugin
 Plugin URI: https://github.com/nhiha60591/izweb-import/
 Description: Import File from zip file
-Version: 2.0.2
+Version: 2.0.3
 Author: Izweb Team
 Author URI: https://github.com/nhiha60591
 Text Domain: izweb-import
@@ -114,6 +114,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             $this->register_taxonomy();
             $this->load_plugin_textdomain();
             if( isset( $_REQUEST['update_sort']) && $_REQUEST['update_sort'] == 'yes'){
+                wp_enqueue_script( 'jquery' );
                 include("update-filters.php");
                 die();
             }
@@ -431,11 +432,11 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                                         $defaults = array(
                                             'post_status'           => 'publish',
                                             'post_type'             => 'program',
-                                            'post_excerpt'          => trim( $doc->getElementsByTagName( $post_excerpt )->item(0)->nodeValue ),
+                                            'post_excerpt'          => trim( stripslashes( $doc->getElementsByTagName( $post_excerpt )->item(0)->nodeValue ) ),
                                             'post_author'           => $current_user->ID,
                                             'ping_status'           => get_option('default_ping_status'),
-                                            'post_title'            => trim( $doc->getElementsByTagName( $post_title )->item(0)->nodeValue ),
-                                            'post_content'          => $post_content
+                                            'post_title'            => trim( stripslashes( $doc->getElementsByTagName( $post_title )->item(0)->nodeValue ) ),
+                                            'post_content'          => stripslashes( $post_content )
                                         );
                                         $defaults = apply_filters( 'izweb_insert_arg_default', $defaults );
                                         $postid = wp_insert_post( $defaults );
@@ -443,12 +444,12 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                                         if( $postid ){
                                             $i++;
                                             foreach( $custom_fields as $field){
-                                                update_post_meta( $postid, $field, trim(  $doc->getElementsByTagName( $field )->item(0)->nodeValue ) );
+                                                update_post_meta( $postid, $field, trim( stripslashes( $doc->getElementsByTagName( $field )->item(0)->nodeValue ) ) );
                                             }
                                             foreach( $matches[0] as $row){
                                                 $field_key = ltrim($row, "[");
                                                 $field_key = rtrim($field_key, "]");
-                                                update_post_meta( $postid, $field_key, trim( $doc->getElementsByTagName( $field_key )->item(0)->nodeValue ) );
+                                                update_post_meta( $postid, $field_key, trim(stripslashes( $doc->getElementsByTagName( $field_key )->item(0)->nodeValue ) ) );
                                                 update_post_meta( $postid, 'izweb_remove_id', $remove_id );
                                             }
                                             update_data_filter(1, $postid);

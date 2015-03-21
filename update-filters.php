@@ -3,7 +3,7 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title></title>
-    <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <?php wp_head(); ?>
     <script type="text/javascript">
         // Closure
         (function() {
@@ -84,7 +84,7 @@
                 jQuery(".completed").html( '100' );
             }
             if( izw_page > all_page ) return;
-            $.ajax( "<?php echo $url; ?>&page="+izw_page )
+            jQuery.ajax( "<?php echo $url; ?>&page="+izw_page )
                 .done(function() {
                     if( izw_page <= all_page ){
                         var pr = Math.round10( (precent * izw_page), -2 );
@@ -160,5 +160,6 @@
 <div class="step">
 
 </div>
+<?php wp_footer(); ?>
 </body>
 </html>
