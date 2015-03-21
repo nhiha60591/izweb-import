@@ -9,7 +9,7 @@
 Plugin Name: Izweb Import Plugin
 Plugin URI: https://github.com/nhiha60591/izweb-import/
 Description: Import File from zip file
-Version: 2.0.3
+Version: 2.0.4
 Author: Izweb Team
 Author URI: https://github.com/nhiha60591
 Text Domain: izweb-import
@@ -596,18 +596,12 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
         function izw_search_ajax(){
             global $wpdb;
 
-            $sql = "SELECT DISTINCT B.meta_value FROM "
-                . "(select ID,post_type from {$wpdb->posts} "
-                . "where post_type = 'program') A "
-                . "INNER JOIN (select meta_value, meta_key,post_id from {$wpdb->postmeta} WHERE meta_key = 'condition') B "
-                . "ON A.ID = B.post_id";
+            $sql = "SELECT A.meta_value FROM  `{$wpdb->postmeta}` A, `{$wpdb->posts}` B
+                WHERE A.post_id=B.ID
+                AND B.post_type='program'
+                AND A.meta_key='condition'";
             $results = $wpdb->get_col($sql);
-            $conditions =  array_intersect_key(
-                $results,
-                array_unique(
-                    array_map( "hh_replace_text", $results )
-                )
-            );
+            $conditions =  array_unique( $results );
             echo implode( ",", $conditions );
             die();
         }

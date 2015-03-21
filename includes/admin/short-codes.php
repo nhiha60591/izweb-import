@@ -212,13 +212,18 @@ function hh_search_program( $atts ){
             $found_mes = '<h3 class="izw-found-mes">'.__( "We have found {$exc_count} Early Access Programs (green) and {$include} Clinical Trials (red)")."</h3>";
             $search_results = $found_mes.$search_results;
         }else{
+            if( $data_search['country'] == '0' ){
+                $country = 'All';
+            }else{
+                $country = $data_search['country'];
+            }
             ?>
             <div class="izw-error-mes">
                 <h3>Sorry, no results were found!</h3>
                 <ul class="izw-error-mes-ul">
                     <li>Try other keywords or check your spelling</li>
                     <li>Check the "include available Clinic Trials in search" option</li>
-                    <li>Get notified when we have information for <strong><?php print htmlspecialchars($data_search['drug_condition']); ?></strong> in <strong><?php print htmlspecialchars($data_search['country']); ?></strong>
+                    <li>Get notified when we have information for <strong><?php print htmlspecialchars($data_search['drug_condition']); ?></strong> in <strong><?php print htmlspecialchars($country); ?></strong>
                         <p style="color: green;font-size: 1.4em;"><?php echo $noti_mess; ?></p>
                         <form name="notification" action="" method="post" id="notification">
                             <p>
@@ -227,7 +232,7 @@ function hh_search_program( $atts ){
                             </p>
                             <p>
                                 <label for="noti_country">Country:</label>
-                                <input type="text" name="noti_country" id="noti_country" value="<?php print str_replace("\'", "'", $data_search['country'] ); ?>" />
+                                <input type="text" name="noti_country" id="noti_country" value="<?php print str_replace("\'", "'", $country ); ?>" />
                             </p>
                             <p>
                                 <label for="noti_email">Email:</label>
@@ -280,7 +285,7 @@ function hh_search_program( $atts ){
                             <div class="filter-item">
                                 <label for="">Study</label>
                                 <p>
-                                    <!--<label><input type="radio" <?php /*if( empty( $data_search['study'] ) || $data_search['study'] == '0' ) echo 'checked=""'; */?> name="study" value="0" />Both</label>-->
+                                    <label><input type="radio" <?php if( empty( $data_search['study'] ) || $data_search['study'] == '0' ) echo 'checked=""'; ?> name="study" value="0" />Both</label>
                                     <?php
                                     $terms = get_terms('program_cat');
                                     foreach( $terms as $term):
@@ -342,7 +347,14 @@ function hh_search_program( $atts ){
                     // since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
                     $.post('<?php echo admin_url( 'admin-ajax.php' ); ?>', data, function(response) {
                         k1 = response.split(',');
-                        $( "#drug_condition" ).autocomplete({source:k1,autoFocus: true,minLength: 3})
+                        $( "#drug_condition" ).autocomplete({
+                            source: function(request, response) {
+                                var results = $.ui.autocomplete.filter(k1, request.term);
+                                response(results.slice(0, 5));
+                            },
+                            autoFocus: true,
+                            minLength: 3
+                        })
                     });
                     $(".page-1").show();
                     $(".search_pagination .wp-pagenavi a").click(function(){
