@@ -566,7 +566,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                     $fields_key[] =  $row;
                     $fields_value[] =  nl2br( preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", get_post_meta( $post->ID, $field_key, true ) ) );
                 }
-                $content = str_replace( $fields_key, $fields_value, $post_content );
+                $content = stripslashes( str_replace( $fields_key, $fields_value, $post_content ) );
             }
             return $content;
         }
