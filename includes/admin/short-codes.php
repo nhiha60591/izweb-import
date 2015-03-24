@@ -352,7 +352,7 @@ function hh_search_program( $atts ){
                                 var results = $.ui.autocomplete.filter(k1, request.term);
                                 response(results.slice(0, 5));
                             },
-                            autoFocus: true,
+                            autoFocus: true
                         })
                     });
                     $(".page-1").show();
