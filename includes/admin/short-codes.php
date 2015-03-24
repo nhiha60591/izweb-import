@@ -353,7 +353,6 @@ function hh_search_program( $atts ){
                                 response(results.slice(0, 5));
                             },
                             autoFocus: true,
-                            minLength: 3
                         })
                     });
                     $(".page-1").show();
