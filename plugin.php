@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( '__TEXTDOMAIN__', 'izweb-import' );
 define( '__IZIPPATH__', plugin_dir_path( __FILE__ ) );
 define( '__IZIPURL__', plugin_dir_url( __FILE__ ) );
-define( '__DBVERSION', '3.0.9' );
+define( '__DBVERSION', '3.1.0' );
 if ( ! class_exists( 'Izweb_Import' ) ) :
     class Izweb_Import{
         function __construct(){

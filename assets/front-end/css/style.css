@@ -89,6 +89,24 @@ input.error {
 .izweb-item .alr{
     text-align: right;
 }
+#izweb-search{
+    position: relative;
+}
+.izw-overLay{
+    position: absolute;
+    top: -10%;
+    left: -3%;
+    height: 110%;
+    width: 106%;
+    display: block;
+    z-index: 999999;
+    opacity: 0.8;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 18px;
+    color: white;
+    background: url(../images/ajax-loader@2x.gif) 50% 50% / 16px 16px no-repeat rgb(255, 255, 255);
+}
 #izweb-search .izweb-search-form .default-form{
     display: table;
     width: 100%;
@@ -98,6 +116,8 @@ input.error {
     width: 50%;
 }
 #izweb-search .izweb-search-form form div input[type="text"]{
+    width: auto;
+    min-width: 35%;
     background: #FFF;
 	box-shadow: none!important;
 	-o-box-shadow: none!important;
@@ -107,6 +127,16 @@ input.error {
     -moz-transition: none!important;
     -webkit-transition: none!important;
     -o-transition: none!important;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -o-border-radius: 10px;
+    -webkit-border-radius: 10px;
+}
+#izweb-search .izweb-search-form form div input[type="submit"]{
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -o-border-radius: 10px;
+    -webkit-border-radius: 10px;
 }
 #izweb-search .izweb-search-form form div.izw-left {
     margin: 0;
@@ -120,18 +150,6 @@ input.error {
     margin: 0;
     padding: 0;
     text-align: right;
-}
-#izweb-search input[type="text"] {
-    width: auto;
-    min-width: 35%;
-	box-shadow: none!important;
-	-o-box-shadow: none!important;
-	-moz-box-shadow: none!important;
-	-webkit-box-shadow: none!important;
-	transition: none!important;
-    -moz-transition: none!important;
-    -webkit-transition: none!important;
-    -o-transition: none!important;
 }
 .izweb .widget .izweb-list-fields ul li{
     width: 100%;

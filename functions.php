@@ -394,7 +394,6 @@ function izw_all_countries(){
         'Taiwan',
         'Tanzania',
         'Thailand',
-        'The Netherlands',
         'Togo',
         'Trinidad and Tobago',
         'Tunisia',

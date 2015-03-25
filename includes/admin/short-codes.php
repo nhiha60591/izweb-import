@@ -105,7 +105,7 @@ function hh_search_program( $atts ){
         if( isset( $data_search['study'] ) && $data_search['study'] != '0'){
             $where .= ' AND study = '.$data_search['study'];
         }else{
-            $exc = get_term_by( 'name', 'Exclude Clinical Trials', 'program_cat' );
+            $exc = get_term_by( 'name', 'Early Access Program', 'program_cat' );
             $SQL = "SELECT count(*) FROM `{$izw_sort_filter}` WHERE `study` = {$exc->term_id}". $where;
             $exc_count = $wpdb->get_var( $SQL );
         }
@@ -119,7 +119,7 @@ function hh_search_program( $atts ){
         $search_results = '';
         if( isset( $data_search['study'] ) && $data_search['study'] != '0'){
             $exc = get_term_by( 'id', $data_search['study'], 'program_cat' );
-            if( $exc->name == "Exclude Clinical Trials"){
+            if( $exc->name == "Early Access Program"){
                 $exc_count = count( $count_p );
             }
         }
@@ -258,6 +258,9 @@ function hh_search_program( $atts ){
     $countries = izw_all_countries();
     ?>
     <div id="izweb-search" class="izweb-search" style="width: 100%;">
+        <div class="izw-overLay">
+            <h3 style="margin-top: 30px;">Loading all data, Please wait...</h3>
+        </div>
         <div class="izweb-search-form">
             <form name="" action="<?php echo get_the_permalink( $post->ID ); ?>" method="get">
                 <input type="hidden" name="page_id" value="<?php echo @$_REQUEST['page_id']; ?>">
@@ -276,25 +279,30 @@ function hh_search_program( $atts ){
                                     <option <?php selected(  str_replace("\'", "'",$data_search['country']),  str_replace("\'", "'",$v)); ?> value="<?php echo $v; ?>"><?php echo $v; ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            <div class="clear"></div>
+                        </div>
+                    </div>
+                    <div class="izw-row">
+                        <div class="filter-item">
+                            <label for="">Study</label>
+                            <p>
+                                <label><input type="radio" <?php if( empty( $data_search['study'] ) || $data_search['study'] == '0' ) echo 'checked=""'; ?> name="study" value="0" />Both</label>
+                                <?php
+                                $terms = get_terms('program_cat');
+                                foreach( $terms as $term):
+                                    ?>
+                                    <label><input type="radio" name="study" <?php checked($data_search['study'], $term->name); ?> value="<?php echo $term->term_id; ?>" /><?php echo $term->name; ?></label>
+                                <?php endforeach; ?>
+                            </p>
+                            <div class="clear"></div>
+                        </div>
+                        <div class="filter-item">
                             <input type="submit" name="izw_search" style="top: 4px;" class="nectar-button large extra-color-1 has-icon regular-button" value="<?php _e( "SEARCH", __TEXTDOMAIN__) ?>" data-color-override="false" data-hover-color-override="false" data-hover-text-color-override="#fff" />
                             <div class="clear"></div>
                         </div>
                     </div>
                     <div class="search_advanced" style="display: none;">
                         <div class="izw-row">
-                            <div class="filter-item">
-                                <label for="">Study</label>
-                                <p>
-                                    <label><input type="radio" <?php if( empty( $data_search['study'] ) || $data_search['study'] == '0' ) echo 'checked=""'; ?> name="study" value="0" />Both</label>
-                                    <?php
-                                    $terms = get_terms('program_cat');
-                                    foreach( $terms as $term):
-                                    ?>
-                                        <label><input type="radio" name="study" <?php checked($data_search['study'], $term->name); ?> value="<?php echo $term->term_id; ?>" /><?php echo $term->name; ?></label>
-                                    <?php endforeach; ?>
-                                </p>
-                                <div class="clear"></div>
-                            </div>
                             <div class="filter-item">
                                 <label for="gender">Gender</label>
                                 <p>
@@ -306,9 +314,6 @@ function hh_search_program( $atts ){
                                 </p>
                                 <div class="clear"></div>
                             </div>
-                        </div>
-
-                        <div class="izw-row">
                             <div class="filter-item">
                                 <label for="">Age Group</label>
                                 <p>
@@ -317,12 +322,6 @@ function hh_search_program( $atts ){
                                     <label><input type="radio" <?php checked($data_search['age_group'], '18-65'); ?> name="age_group" value="18-65" />Adult (18-65)</label>
                                     <label><input type="radio" <?php checked($data_search['age_group'], '65+'); ?> name="age_group" value="65+" />Senior (65+)</label>
                                 </p>
-                                <div class="clear"></div>
-                            </div>
-                            <div class="filter-item">
-                                <!--<label for="">Sponsor</label>
-                                <input type="text" name="sponsor" value="<?php /*print htmlspecialchars( str_replace("\'", "'",  $data_search['sponsor'])); */?>" />-->
-                                <input type="submit" name="izw_search" style="top: 4px;" class="nectar-button large extra-color-1 has-icon regular-button" value="<?php _e( "SEARCH", __TEXTDOMAIN__) ?>" data-color-override="false" data-hover-color-override="false" data-hover-text-color-override="#fff" />
                                 <div class="clear"></div>
                             </div>
                         </div>
@@ -335,6 +334,13 @@ function hh_search_program( $atts ){
             </form>
             <script type="text/javascript">
                 jQuery(document).ready(function( $ ){
+                    function unique(list) {
+                        var result = [];
+                        $.each(list, function(i, e) {
+                            if ($.inArray(e, result) == -1) result.push(e);
+                        });
+                        return result;
+                    }
                     /*var k1;
                     $.get("<?php echo __IZIPURL__."autocomplete-{$key1}.txt"; ?>", function(data) {
                         k1 = data.split(',');
@@ -346,11 +352,19 @@ function hh_search_program( $atts ){
 
                     // since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
                     $.post('<?php echo admin_url( 'admin-ajax.php' ); ?>', data, function(response) {
+                        $( ".izw-overLay").hide();
                         k1 = response.split(',');
+                        k1 = unique( k1 );
                         $( "#drug_condition" ).autocomplete({
                             source: function(request, response) {
-                                var results = $.ui.autocomplete.filter(k1, request.term);
-                                response(results.slice(0, 5));
+                                /*var results = $.ui.autocomplete.filter(k1, request.term);
+                                response(results.slice(0, 5));*/
+                                var re = $.ui.autocomplete.escapeRegex(request.term);
+                                var matcher = new RegExp( "^" + re, "i" );
+                                var a = $.grep( k1, function(item,index){
+                                    return matcher.test(item);
+                                });
+                                response( a.slice(0, 5) );
                             },
                             autoFocus: true
                         })
