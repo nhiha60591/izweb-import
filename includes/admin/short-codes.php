@@ -91,7 +91,7 @@ function hh_search_program( $atts ){
         if( isset( $data_search['age_group'] ) && $data_search['age_group'] != '0'){
             if( strpos( $data_search['age_group'],'-') != FALSE){
                 $bt = explode( '-', $data_search['age_group'] );
-                $where .= ' AND ( min_age BETWEEN '.$bt[0].' AND '.$bt[0].' )';
+                $where .= ' AND ( min_age BETWEEN '.$bt[0].' AND '.$bt[1].' )';
             }elseif( strpos( $data_search['age_group'],'+') != FALSE){
                 $bt = explode( '+', $data_search['age_group'] );
                 $where .= ' AND min_age >= '.$bt[0];
