@@ -280,6 +280,49 @@ h4.box-shadow {
     width: auto;
     max-width: 70%;
 }
+#hh_search{
+    display: block;
+    width: 600px;
+    margin: auto;
+    position: relative;
+}
+#hh_search input{
+    height: 40px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    float: left;
+    background: #FFFFFF;
+}
+#hh_search input[type="text"]{
+    border: 1px solid #555555;
+    border-radius: 5px 0 0 5px;
+    width: 561px;
+    box-shadow: none;
+    -webkit-box-shadow:none;
+    -moz-box-shadow: none;
+    -o-box-shadow: none;
+}
+#hh_search input[type="image"]{
+    border: 1px solid #555555;
+    border-left: none;
+    border-radius: 0 5px 5px 0;
+    box-shadow: none;
+    -webkit-box-shadow:none;
+    -moz-box-shadow: none;
+    -o-box-shadow: none;
+}
+#hh_search .clear{
+    clear: both;
+}
+#hh_search label.error {
+    position: absolute;
+    left: 0;
+    top: 40px;
+}
+#hh_search input[type="text"].error{
+    background: #f8f9a0;
+}
 @media screen and (max-width: 1024px){
     .izweb-item .izweb-list-fields ul li label {
         min-width: 120px;

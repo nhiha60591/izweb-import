@@ -9,7 +9,7 @@
 Plugin Name: Izweb Import Plugin
 Plugin URI: https://github.com/nhiha60591/izweb-import/
 Description: Import File from zip file
-Version: 3.2.0
+Version: 3.2.1
 Author: Izweb Team
 Author URI: https://github.com/nhiha60591
 Text Domain: izweb-import
@@ -26,7 +26,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
         function __construct(){
             add_action( 'init', array( $this, 'init'), 1 );
             add_action( 'admin_print_scripts', array( $this, 'admin_plugin_scripts' ) );
-            add_action( 'wp_enqueue_scripts', array( $this, 'front_plugin_scripts' ), 999 );
+            add_action( 'wp_enqueue_scripts', array( $this, 'front_plugin_scripts' ), 10 );
             add_action( 'admin_menu', array( $this, 'admin_menu' ) );
             add_action( 'izw_tab_import', array( $this, 'import_tab_import' ) );
             add_action( 'izw_tab_select-option', array( $this, 'import_tab_select_option' ) );
@@ -40,10 +40,18 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
 			add_filter('posts_orderby', array( $this, 'edit_posts_orderby'));
 			add_filter('posts_join_paged', array( $this, 'edit_posts_join_paged'));
 			//add_filter('posts_groupby', array( $this, 'edit_posts_groupby'));
+
             add_action( 'wp_ajax_izw_search_ajax', array( $this, 'izw_search_ajax' ) );
             add_action( 'wp_ajax_nopriv_izw_search_ajax', array( $this, 'izw_search_ajax' ) );
-
             //add_action( 'izw_cron_notification', array( $this, 'do_cron_notification' ) );
+
+            add_action('init', array( __CLASS__, 'custom_rewrite_rule' ), 10, 0);
+            add_filter('query_vars', array( __CLASS__, 'hh_add_query_vars' ) );
+            add_filter('template_include', array( __CLASS__, 'hh_search_display' ) );
+            add_action( 'template_redirect', array( __CLASS__, 'hh_redirect' ) );
+            add_filter( 'wp_title', array( __CLASS__, 'hh_change_title' ), 10, 2 );
+
+            add_action( 'after_setup_theme', array( __CLASS__, 'my_ag_child_theme_setup' ) );
 
             register_activation_hook( __FILE__, array( $this, 'install' ) );
             register_deactivation_hook( __FILE__, array( $this, 'uninstall' ) );
@@ -164,9 +172,12 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
         function front_plugin_scripts(){
             wp_enqueue_style( 'izweb-import-front', plugin_dir_url( __FILE__ )."assets/front-end/css/style.css" );
             wp_enqueue_style( 'izweb-import-ui', plugin_dir_url( __FILE__ )."assets/front-end/css/jquery-ui.css" );
+            wp_enqueue_style( 'izweb-chosen', plugin_dir_url( __FILE__ )."assets/front-end/css/chosen.css" );
             wp_enqueue_script( 'izweb-import-ui', plugin_dir_url( __FILE__ )."assets/front-end/js/jquery-ui.js", array( 'jquery' ) );
             wp_enqueue_script( 'izweb-import-overwrite', plugin_dir_url( __FILE__ )."assets/front-end/js/izw-import.js", array( 'jquery' ), '1.0.0', true );
             wp_enqueue_script( 'izweb-validate', plugin_dir_url( __FILE__ )."assets/front-end/js/jquery.validate.js", array( 'jquery' ), '1.0.0', true );
+            wp_enqueue_script( 'izweb-chosen', plugin_dir_url( __FILE__ )."assets/front-end/js/chosen.jquery.js", array( 'jquery' ), '1.0.0', true );
+            wp_enqueue_script( 'izweb-prism', plugin_dir_url( __FILE__ )."assets/front-end/js/prism.js", array( 'jquery' ), '1.0.0', true );
         }
 
         /**
@@ -555,9 +566,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
         function change_content( $content ){
             if ( is_singular('program') ){
                 global $post;
-                $content = '';
-                $post_content = get_option( 'izweb_import_content' );
-                preg_match_all("/\[[^\]]*\]/", $post_content, $matches);
+                preg_match_all("/\[[^\]]*\]/", $content, $matches );
                 $fields_key = array();
                 $fields_value = array();
                 foreach( $matches[0] as $row){
@@ -566,7 +575,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                     $fields_key[] =  $row;
                     $fields_value[] =  nl2br( preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", get_post_meta( $post->ID, $field_key, true ) ) );
                 }
-                $content = stripslashes( str_replace( $fields_key, $fields_value, $post_content ) );
+                $content = stripslashes( str_replace( $fields_key, $fields_value, $content ) );
             }
             return $content;
         }
@@ -605,45 +614,123 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             echo implode( ",", $conditions );
             die();
         }
+
+        /**
+         * Add Rewrite Rule
+         */
+        function custom_rewrite_rule() {
+            add_rewrite_rule('^standard-search/([^/]*)/([^/]*)/?','index.php?standard_search=$matches[1]&country=$matches[2]','top');
+            add_rewrite_rule('^standard-search/([^/]*)/?','index.php?standard_search=$matches[1]','top');
+            add_rewrite_endpoint( 'standard_search', EP_PERMALINK | EP_PAGES );
+            add_rewrite_endpoint( 'country', EP_PERMALINK | EP_PAGES );
+            flush_rewrite_rules();
+        }
+
+        /**
+         * Add Query Var From New Rewrite Rule
+         *
+         * @param $vars
+         * @return array
+         */
+        function hh_add_query_vars($vars) {
+            $vars[] = 'standard_search';
+            $vars[] = 'country';
+            return $vars;
+        }
+
+        /**
+         * Include Search Page
+         *
+         * @param $include
+         * @return string
+         */
+        function hh_search_display( $include ) {
+            $standard_search = get_query_var('standard_search');
+            if( $standard_search != ''){
+                $include = __IZIPPATH__.'templates/standard-search.php';
+            }
+            return $include;
+        }
+
+        /**
+         * Redirect To Search Advanced Page
+         */
+        function hh_redirect(){
+            $permalink = get_option('permalink_structure');
+            if( empty( $permalink ) ) return;
+            if( isset( $_REQUEST['standard_search'] ) ){
+                $key = str_replace( " ", "+", $_REQUEST['standard_search'] );
+                $data = array(
+                    'study' => @$_REQUEST['study'],
+                    'gender' => @$_REQUEST['gender'],
+                    'age' => @$_REQUEST['age'],
+                );
+                $key_search = array();
+                foreach( $data as $k=>$v ){
+                    if( !empty( $v ) ){
+                        $key_search[$k] = str_replace( " ", "+", $v );
+                    }
+                }
+                $url = '/standard-search/'.$key;
+                if( isset( $_REQUEST['country'] ) ){
+                    $url .= '/'.str_replace( " ", "+", $_REQUEST['country'] );
+                }
+                wp_redirect( add_query_arg( $key_search, home_url( $url ) ) );
+                exit();
+            }
+        }
+
+        /**
+         * Change Title in Search Advanced Page
+         * @param $title
+         * @param $sep
+         * @return string
+         */
+        function hh_change_title( $title, $sep ){
+            $title = '';
+            $condition = get_query_var( 'standard_search' );
+            $paged = get_query_var( 'paged' );
+            if( !empty( $condition ) && !empty( $paged) ){
+                $title = str_replace( "+", "", $condition). ' | ';
+            }
+            if( !empty( $condition )){
+                $title = str_replace( "+", "", $condition). ' | ';
+            }
+
+            return $title;
+        }
+
+        /**
+         * Setup milestone shortcode
+         */
+        function my_ag_child_theme_setup() {
+            remove_shortcode( 'milestone' );
+            add_shortcode('milestone', array( __CLASS__, 'my_nectar_milestone' ) );
+        }
+
+        /**
+         * Change milestone shortcode
+         * @param $atts
+         * @param null $content
+         * @return string
+         */
+        function my_nectar_milestone($atts, $content = null) {
+            extract(shortcode_atts(array("subject" => '', 'symbol' => '', 'symbol_position' => 'after','terms'=>'', 'counter_type'=>'', 'number' => '0', 'color' => 'Default'), $atts));
+
+            if(!empty($symbol)) {
+                $symbol_markup = 'data-symbol="'.$symbol.'" data-symbol-pos="'.$symbol_position.'"';
+            } else {
+                $symbol_markup = null;
+            }
+            if( $terms != ''){
+                $number = do_shortcode( "[counter_program terms='{$terms}']" );
+            }
+
+            $number_markup = '<div class="number '.strtolower($color). " " .$counter_type.'"><span>'.$number.'</span></div>';
+            $subject_markup = '<div class="subject">'.$subject.'</div>';
+
+            return do_shortcode( '<div class="nectar-milestone" '.$symbol_markup.'> '.$number_markup.' '.$subject_markup.' </div>' );
+        }
     }
     new Izweb_Import();
 endif;
-
-//Shortcode Processing
-//milestone
-function my_nectar_milestone($atts, $content = null) {
-    extract(shortcode_atts(array("subject" => '', 'symbol' => '', 'symbol_position' => 'after','terms'=>'', 'counter_type'=>'', 'number' => '0', 'color' => 'Default'), $atts));
-
-	if(!empty($symbol)) {
-		$symbol_markup = 'data-symbol="'.$symbol.'" data-symbol-pos="'.$symbol_position.'"';
-	} else {
-		$symbol_markup = null;
-	}
-    if( $terms != ''){
-        $number = do_shortcode( "[counter_program terms='{$terms}']" );
-    }
-
-	$number_markup = '<div class="number '.strtolower($color). " " .$counter_type.'"><span>'.$number.'</span></div>';
-	$subject_markup = '<div class="subject">'.$subject.'</div>';
-
-    return do_shortcode( '<div class="nectar-milestone" '.$symbol_markup.'> '.$number_markup.' '.$subject_markup.' </div>' );
-}
-
-
-add_action( 'after_setup_theme', 'my_ag_child_theme_setup' );
-
-function my_ag_child_theme_setup() {
-   remove_shortcode( 'milestone' );
-   add_shortcode('milestone', 'my_nectar_milestone');
-}
-/*
-function child_nectar_register_js() {
-	if (!is_admin()) {
-		// Dequeue
-		wp_deregister_script( 'nectarFrontend' );
-		wp_register_script('nectarFrontend', plugins_url( '/init.js', __FILE__ ), array('jquery', 'superfish'), '4.8.1', TRUE);
-		wp_enqueue_script('nectarFrontend');
-	}
-}
-add_action('wp_enqueue_scripts', 'child_nectar_register_js',100);
-*/
