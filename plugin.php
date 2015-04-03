@@ -9,7 +9,7 @@
 Plugin Name: Izweb Import Plugin
 Plugin URI: https://github.com/nhiha60591/izweb-import/
 Description: Import File from zip file
-Version: 3.2.1
+Version: 3.2.2
 Author: Izweb Team
 Author URI: https://github.com/nhiha60591
 Text Domain: izweb-import
@@ -267,6 +267,9 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             do_action( 'izweb_after_register_post_type' );
         }
 
+        /**
+         * Register Taxonomy
+         */
         function register_taxonomy(){
             do_action( 'izweb_before_register_taxonomy');
             // Add new taxonomy, NOT hierarchical (like tags)
@@ -539,6 +542,10 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             load_textdomain( 'izweb-import', $dir . 'izweb-import/izweb-import-' . $locale . '.mo' );
             load_plugin_textdomain( 'izweb-import', false, plugin_basename( dirname( __FILE__ ) ) . "/languages" );
         }
+
+        /**
+         * Widget Init
+         */
         function plugin_widgets_init(){
             register_sidebar( array(
                 'name' => __( 'Program Sidebar', 'izweb' ),
@@ -619,9 +626,9 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * Add Rewrite Rule
          */
         function custom_rewrite_rule() {
-            add_rewrite_rule('^standard-search/([^/]*)/([^/]*)/?','index.php?standard_search=$matches[1]&country=$matches[2]','top');
-            add_rewrite_rule('^standard-search/([^/]*)/?','index.php?standard_search=$matches[1]','top');
-            add_rewrite_endpoint( 'standard_search', EP_PERMALINK | EP_PAGES );
+            add_rewrite_rule('^search/([^/]*)/([^/]*)/?','index.php?search=$matches[1]&country=$matches[2]','top');
+            add_rewrite_rule('^search/([^/]*)/?','index.php?search=$matches[1]','top');
+            add_rewrite_endpoint( 'search', EP_PERMALINK | EP_PAGES );
             add_rewrite_endpoint( 'country', EP_PERMALINK | EP_PAGES );
             flush_rewrite_rules();
         }
@@ -633,7 +640,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * @return array
          */
         function hh_add_query_vars($vars) {
-            $vars[] = 'standard_search';
+            $vars[] = 'search';
             $vars[] = 'country';
             return $vars;
         }
@@ -645,9 +652,9 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * @return string
          */
         function hh_search_display( $include ) {
-            $standard_search = get_query_var('standard_search');
+            $standard_search = get_query_var('search');
             if( $standard_search != ''){
-                $include = __IZIPPATH__.'templates/standard-search.php';
+                $include = __IZIPPATH__.'templates/search.php';
             }
             return $include;
         }
@@ -658,8 +665,8 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
         function hh_redirect(){
             $permalink = get_option('permalink_structure');
             if( empty( $permalink ) ) return;
-            if( isset( $_REQUEST['standard_search'] ) ){
-                $key = str_replace( " ", "+", $_REQUEST['standard_search'] );
+            if( isset( $_REQUEST['search'] ) ){
+                $key = str_replace( " ", "+", $_REQUEST['search'] );
                 $data = array(
                     'study' => @$_REQUEST['study'],
                     'gender' => @$_REQUEST['gender'],
@@ -671,7 +678,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                         $key_search[$k] = str_replace( " ", "+", $v );
                     }
                 }
-                $url = '/standard-search/'.$key;
+                $url = '/search/'.$key;
                 if( isset( $_REQUEST['country'] ) ){
                     $url .= '/'.str_replace( " ", "+", $_REQUEST['country'] );
                 }
@@ -688,7 +695,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          */
         function hh_change_title( $title, $sep ){
             $title = '';
-            $condition = get_query_var( 'standard_search' );
+            $condition = get_query_var( 'search' );
             $paged = get_query_var( 'paged' );
             if( !empty( $condition ) && !empty( $paged) ){
                 $title = str_replace( "+", "", $condition). ' | ';

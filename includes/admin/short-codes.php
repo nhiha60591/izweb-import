@@ -519,25 +519,13 @@ function izw_input_html( $key, $type = 'text', $data = array() ){
             return apply_filters( 'izw_input_text_html', $result, $key, $data );
     }
 }
-add_shortcode( 'standard_search', 'hh_standard_search' );
-function hh_standard_search($atts ){
-    $atr = shortcode_atts(
-        array(
-            'field' => 'slug',
-            'taxonomy' => 'program_cat',
-            'terms' => ''
-        ), $atts
-    );
+add_shortcode( 'search', 'hh_search' );
+function hh_search( $atts ){
     ob_start();
-    if( isset( $_POST['standard_key'] ) && !empty( $_POST['standard_key'] )){
-        $key = str_replace( " ", "_", $_POST['standard_key']);
-        $url = add_query_arg( array('standard_search'=> $key ), home_url());
-        exit();
-    }
     ?>
     <form name="hh_search" id="hh_search_form" action="" method="get" target="_blank">
         <div id="hh_search">
-            <input type="text" id="standard_search" name="standard_search" value="" />
+            <input type="text" id="search" name="search" value="" />
             <input type="image" src="<?php echo __IZIPURL__; ?>assets/front-end/images/search.png" />
             <div class="clear"></div>
         </div>
@@ -546,10 +534,10 @@ function hh_standard_search($atts ){
         jQuery(document).ready(function($){
             $("#hh_search_form").validate({
                 rules: {
-                    standard_search: "required"
+                    search: "required"
                 },
                 messages: {
-                    standard_search: "Please enter your drug or condition"
+                    search: "Please enter your drug or condition"
                 }
             });
         });

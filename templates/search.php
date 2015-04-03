@@ -16,7 +16,7 @@ $countries = izw_all_countries(); ?>
                                data-hover-color-override="false" data-hover-text-color-override="#fff">Iphone App</a>
                         </div>
                     </div>
-                    <input type="text" name="standard_search" value=""/>
+                    <input type="text" name="search" value=""/>
                     <input type="image" src="<?php echo __IZIPURL__; ?>assets/front-end/images/search.png"/>
 
                     <div class="clear"></div>
@@ -78,10 +78,10 @@ $countries = izw_all_countries(); ?>
                     $("#study").chosen();
                     $("#advanced-search").validate({
                         rules: {
-                            standard_search: "required"
+                            search: "required"
                         },
                         messages: {
-                            standard_search: "Please enter your drug or condition"
+                            search: "Please enter your drug or condition"
                         }
                     });
                 });
@@ -91,7 +91,7 @@ $countries = izw_all_countries(); ?>
     <div class="row" style="z-index: 1;position: relative;min-height: 300px;">
         <div class="col span_9 col_first">
             <?php
-            $condition = get_query_var( 'standard_search' );
+            $condition = get_query_var( 'search' );
             $country = get_query_var( 'country' );
             if (isset($condition)) {
                 global $is_search_program, $wpdb;
@@ -183,7 +183,8 @@ $countries = izw_all_countries(); ?>
                                     <div class="post-content">
                                         <?php do_action('izweb_before_search_content', $id); ?>
                                         <?php
-                                        $exc_text = get_post_meta($id, $excerpt, true);
+                                        $exc_text = get_post_meta($id, 'post_excerpt', true);
+                                        print_r( $exc_text );
                                         if (!empty( $exc_text ) ){
                                             echo _substr(strip_tags($exc_text, '<p><a>'), 300);
                                         }elseif( !empty( $post->post_excerpt )){
@@ -312,8 +313,41 @@ $countries = izw_all_countries(); ?>
             ?>
         </div>
         <div id="sidebar" class="col span_3 col_last">
-            <?php get_sidebar(); ?>
-            <?php dynamic_sidebar( 'advanced_search' ); ?>
+            <div class="hh_notice">
+                <h3>Be the first to know when a new drug for this condition is available</h3>
+            </div>
+            <!--END .hh_notice -->
+            <div class="hh_notification">
+                <form name="notification" action="" method="post" id="notification">
+                    <p>
+                        <label for="noti_condition">Condition:</label>
+                        <input type="text" name="noti_condition" id="noti_condition"
+                               value="<?php print str_replace("\'", "'", $condition ); ?>"/>
+                    </p>
+
+                    <p>
+                        <label for="noti_country">Country:</label>
+                        <input type="text" name="noti_country" id="noti_country"
+                               value="<?php print str_replace("\'", "'", $country); ?>"/>
+                    </p>
+
+                    <p>
+                        <label for="noti_email">Email:</label>
+                        <input type="text" name="noti_email" id="noti_email" value=""/>
+                    </p>
+
+                    <p>
+                        <input type="submit" name="send_mail" value="Singup"/>
+                    </p>
+                </form>
+            </div>
+            <!-- END .hh_notification -->
+            <div class="hh_counter">
+                <?php echo do_shortcode( '[milestone symbol_position="after" color="Accent-Color" terms="exclude-clinical-trials" counter_type="eap" subject="Ongoing Early Access Programs" symbol=""]'); ?>
+
+                <?php echo do_shortcode( '[milestone symbol_position="after" color="Extra-Color-1" terms="include-clinical-trials" counter_type="c" subject="Ongoing Clinical Trials" symbol=""]');?>
+            </div>
+            <!-- END .hh_counter -->
         </div>
         <!--/sidebar-->
     </div>
