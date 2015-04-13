@@ -204,7 +204,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             add_submenu_page( 'edit.php?post_type=program', __( 'Select fields', __TEXTDOMAIN__ ), __( 'Select fields', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-fields', array( __CLASS__, 'setting_page' ) );
             add_submenu_page( 'edit.php?post_type=program', __( 'Remove posts', __TEXTDOMAIN__ ), __( 'Remove posts', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-remove-posts', array( __CLASS__, 'remove_posts_page' ) );
             add_submenu_page( 'edit.php?post_type=program', __( 'Search filters', __TEXTDOMAIN__ ), __( 'Search filters', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-search-filters', array( __CLASS__, 'search_filters_page' ) );
-            add_submenu_page( 'edit.php?post_type=program', __( 'Search Results Template', __TEXTDOMAIN__ ), __( 'Search Results Template', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-search-filters', array( __CLASS__, 'search_filters_page' ) );
+            //add_submenu_page( 'edit.php?post_type=program', __( 'Search Results Template', __TEXTDOMAIN__ ), __( 'Search Results Template', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-search-filters', array( __CLASS__, 'search_filters_page' ) );
         }
         function post_custom_meta_box($post) {
             ?>
