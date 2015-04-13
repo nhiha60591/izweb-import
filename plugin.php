@@ -9,7 +9,7 @@
 Plugin Name: Izweb Import Plugin
 Plugin URI: https://github.com/nhiha60591/izweb-import/
 Description: Import File from zip file
-Version: 3.2.2
+Version: 4.0.0
 Author: Izweb Team
 Author URI: https://github.com/nhiha60591
 Text Domain: izweb-import
@@ -24,38 +24,49 @@ define( '__DBVERSION', '3.1.0' );
 if ( ! class_exists( 'Izweb_Import' ) ) :
     class Izweb_Import{
         function __construct(){
-            add_action( 'init', array( $this, 'init'), 1 );
-            add_action( 'admin_print_scripts', array( $this, 'admin_plugin_scripts' ) );
-            add_action( 'wp_enqueue_scripts', array( $this, 'front_plugin_scripts' ), 10 );
-            add_action( 'admin_menu', array( $this, 'admin_menu' ) );
-            add_action( 'izw_tab_import', array( $this, 'import_tab_import' ) );
-            add_action( 'izw_tab_select-option', array( $this, 'import_tab_select_option' ) );
-            add_action( 'izweb_before_setting_page', array( $this, 'process_import' ) );
-            add_filter( 'template_include', array( $this, 'template_include' ), 99 );
-            add_action( 'widgets_init', array( $this, 'plugin_widgets_init' ) );
-            //add_action( 'init', array( $this, 'register_taxonomy' ) );
-            add_filter( 'the_content', array( $this, 'change_content' ), 999 );
-            add_action( 'admin_notices', array( $this, 'admin_notices' ) );
-			add_filter( 'posts_where' , array( $this, 'posts_where_statement') );
-			add_filter('posts_orderby', array( $this, 'edit_posts_orderby'));
-			add_filter('posts_join_paged', array( $this, 'edit_posts_join_paged'));
-			//add_filter('posts_groupby', array( $this, 'edit_posts_groupby'));
+            add_action( 'init', array( __CLASS__, 'init'), 1 );
+            add_action( 'admin_print_scripts', array( __CLASS__, 'admin_plugin_scripts' ) );
+            add_action( 'wp_enqueue_scripts', array( __CLASS__, 'front_plugin_scripts' ), 10 );
+            add_action( 'admin_menu', array( __CLASS__, 'admin_menu' ) );
+            add_action( 'izw_tab_import', array( __CLASS__, 'import_tab_import' ) );
+            add_action( 'izw_tab_select-option', array( __CLASS__, 'import_tab_select_option' ) );
+            add_action( 'izweb_before_setting_page', array( __CLASS__, 'process_import' ) );
+            add_filter( 'template_include', array( __CLASS__, 'template_include' ), 99 );
+            add_action( 'widgets_init', array( __CLASS__, 'plugin_widgets_init' ) );
+            //add_action( 'init', array( __CLASS__, 'register_taxonomy' ) );
+            add_filter( 'the_content', array( __CLASS__, 'change_content' ), 999 );
+            add_action( 'admin_notices', array( __CLASS__, 'admin_notices' ) );
+			add_filter( 'posts_where' , array( __CLASS__, 'posts_where_statement') );
+			add_filter('posts_orderby', array( __CLASS__, 'edit_posts_orderby'));
+			add_filter('posts_join_paged', array( __CLASS__, 'edit_posts_join_paged'));
+			//add_filter('posts_groupby', array( __CLASS__, 'edit_posts_groupby'));
 
-            add_action( 'wp_ajax_izw_search_ajax', array( $this, 'izw_search_ajax' ) );
-            add_action( 'wp_ajax_nopriv_izw_search_ajax', array( $this, 'izw_search_ajax' ) );
-            //add_action( 'izw_cron_notification', array( $this, 'do_cron_notification' ) );
+            add_action( 'wp_ajax_izw_search_ajax', array( __CLASS__, 'izw_search_ajax' ) );
+            add_action( 'wp_ajax_nopriv_izw_search_ajax', array( __CLASS__, 'izw_search_ajax' ) );
+            //add_action( 'izw_cron_notification', array( __CLASS__, 'do_cron_notification' ) );
 
             add_action('init', array( __CLASS__, 'custom_rewrite_rule' ), 10, 0);
             add_filter('query_vars', array( __CLASS__, 'hh_add_query_vars' ) );
-            add_filter('template_include', array( __CLASS__, 'hh_search_display' ) );
+            //add_filter('template_include', array( __CLASS__, 'hh_search_display' ) );
             add_action( 'template_redirect', array( __CLASS__, 'hh_redirect' ) );
-            add_filter( 'wp_title', array( __CLASS__, 'hh_change_title' ), 10, 2 );
+            add_filter( 'wp_title', array( __CLASS__, 'hh_change_title' ), 999, 2 );
 
             add_action( 'after_setup_theme', array( __CLASS__, 'my_ag_child_theme_setup' ) );
 
-            register_activation_hook( __FILE__, array( $this, 'install' ) );
-            register_deactivation_hook( __FILE__, array( $this, 'uninstall' ) );
+            register_activation_hook( __FILE__, array( __CLASS__, 'install' ) );
+            register_deactivation_hook( __FILE__, array( __CLASS__, 'uninstall' ) );
 		
+        }
+        function add_boxes(){
+            add_action( 'add_meta_boxes', array( __CLASS__, 'add_meta_box' ) );
+        }
+        function add_meta_box(){
+            add_meta_box(
+                'postcustom',
+                __('Custom Fields'),
+                array(__CLASS__, 'post_custom_meta_box'),
+                'program'
+            );
         }
         function do_cron_notification(){
             global $wpdb;
@@ -116,11 +127,11 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * Init Plugin
          */
         function init(){
-            $this->defines();
-            $this->includes();
-            $this->register_post_type();
-            $this->register_taxonomy();
-            $this->load_plugin_textdomain();
+            Izweb_Import::defines();
+            Izweb_Import::includes();
+            Izweb_Import::register_post_type();
+            Izweb_Import::register_taxonomy();
+            Izweb_Import::load_plugin_textdomain();
             if( isset( $_REQUEST['update_sort']) && $_REQUEST['update_sort'] == 'yes'){
                 wp_enqueue_script( 'jquery' );
                 include("update-filters.php");
@@ -138,7 +149,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                 die();
             }
             if( isset( $_REQUEST['check_cron']) ){
-                $this->do_cron_notification();
+                Izweb_Import::do_cron_notification();
                 die();
             }
 
@@ -162,7 +173,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * Admin Plugin Style And Script
          */
         function admin_plugin_scripts(){
-            wp_enqueue_script( 'izweb-import', plugin_dir_url( __FILE__ )."assets/admin/js/izweb-import.js", array( 'jquery' ) );
+            wp_enqueue_script( 'izweb-import', plugin_dir_url( __FILE__ )."assets/admin/js/izweb-import.js", array( 'jquery' ),'1.0.0',true );
             wp_enqueue_style( 'izweb-import', plugin_dir_url( __FILE__ )."assets/admin/css/style.css" );
         }
 
@@ -174,7 +185,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             wp_enqueue_style( 'izweb-import-ui', plugin_dir_url( __FILE__ )."assets/front-end/css/jquery-ui.css" );
             wp_enqueue_style( 'izweb-chosen', plugin_dir_url( __FILE__ )."assets/front-end/css/chosen.css" );
             wp_enqueue_script( 'izweb-import-ui', plugin_dir_url( __FILE__ )."assets/front-end/js/jquery-ui.js", array( 'jquery' ) );
-            wp_enqueue_script( 'izweb-import-overwrite', plugin_dir_url( __FILE__ )."assets/front-end/js/izw-import.js", array( 'jquery' ), '1.0.0', true );
+            wp_enqueue_script( 'izweb-import-overwrite', plugin_dir_url( __FILE__ )."assets/front-end/js/izw-import.js", array( 'jquery' ), '1.0.0', false );
             wp_enqueue_script( 'izweb-validate', plugin_dir_url( __FILE__ )."assets/front-end/js/jquery.validate.js", array( 'jquery' ), '1.0.0', true );
             wp_enqueue_script( 'izweb-chosen', plugin_dir_url( __FILE__ )."assets/front-end/js/chosen.jquery.js", array( 'jquery' ), '1.0.0', true );
             wp_enqueue_script( 'izweb-prism', plugin_dir_url( __FILE__ )."assets/front-end/js/prism.js", array( 'jquery' ), '1.0.0', true );
@@ -184,10 +195,32 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * Admin Menu
          */
         function admin_menu(){
-            add_submenu_page( 'edit.php?post_type=program', __( 'Import Settings', __TEXTDOMAIN__ ), __( 'Import Settings', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-setting', array( $this, 'import_page' ));
-            add_submenu_page( 'edit.php?post_type=program', __( 'Select fields', __TEXTDOMAIN__ ), __( 'Select fields', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-fields', array( $this, 'setting_page' ) );
-            add_submenu_page( 'edit.php?post_type=program', __( 'Remove posts', __TEXTDOMAIN__ ), __( 'Remove posts', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-remove-posts', array( $this, 'remove_posts_page' ) );
-            add_submenu_page( 'edit.php?post_type=program', __( 'Search filters', __TEXTDOMAIN__ ), __( 'Search filters', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-search-filters', array( $this, 'search_filters_page' ) );
+            if ( is_admin() ) {
+                remove_meta_box('postcustom', 'program', 'normal');
+                add_action( 'load-post.php', array( __CLASS__, 'add_boxes' ) );
+                add_action( 'load-post-new.php', array( __CLASS__, 'add_boxes' ) );
+            }
+            add_submenu_page( 'edit.php?post_type=program', __( 'Import Settings', __TEXTDOMAIN__ ), __( 'Import Settings', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-setting', array( __CLASS__, 'import_page' ));
+            add_submenu_page( 'edit.php?post_type=program', __( 'Select fields', __TEXTDOMAIN__ ), __( 'Select fields', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-fields', array( __CLASS__, 'setting_page' ) );
+            add_submenu_page( 'edit.php?post_type=program', __( 'Remove posts', __TEXTDOMAIN__ ), __( 'Remove posts', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-remove-posts', array( __CLASS__, 'remove_posts_page' ) );
+            add_submenu_page( 'edit.php?post_type=program', __( 'Search filters', __TEXTDOMAIN__ ), __( 'Search filters', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-search-filters', array( __CLASS__, 'search_filters_page' ) );
+            add_submenu_page( 'edit.php?post_type=program', __( 'Search Results Template', __TEXTDOMAIN__ ), __( 'Search Results Template', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-search-filters', array( __CLASS__, 'search_filters_page' ) );
+        }
+        function post_custom_meta_box($post) {
+            ?>
+            <div id="postcustomstuff">
+                <div id="ajax-response"></div>
+                <?php
+                $metadata = has_meta($post->ID);
+                foreach ( $metadata as $key => $value ) {
+                    if ( is_protected_meta( $metadata[ $key ][ 'meta_key' ], 'post' ) || ! current_user_can( 'edit_post_meta', $post->ID, $metadata[ $key ][ 'meta_key' ] ) )
+                        unset( $metadata[ $key ] );
+                }
+                list_meta( $metadata );
+                hh_meta_form( $post ); ?>
+            </div>
+            <p><?php _e('Custom fields can be used to add extra metadata to a post that you can <a href="http://codex.wordpress.org/Using_Custom_Fields" target="_blank">use in your theme</a>.'); ?></p>
+        <?php
         }
 
         /**
@@ -440,6 +473,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                             $i=0;
                             while ($f = readdir($handle)) {
                                 if ($f != "." && $f != "..") {
+                                    if( is_dir( $folder."/".$f )) continue;
                                     $doc = new DOMDocument();
                                     $doc->load( $folder."/".$f );
                                     if( !empty( $custom_fields ) && is_array( $custom_fields ) && !empty($post_title) && !empty( $post_content ) ){
@@ -457,8 +491,8 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                                         wp_set_post_terms( $postid, array( (int)$_POST['cat'] ), 'program_cat' );
                                         if( $postid ){
                                             $i++;
-                                            foreach( $custom_fields as $field){
-                                                update_post_meta( $postid, $field, trim( stripslashes( $doc->getElementsByTagName( $field )->item(0)->nodeValue ) ) );
+                                            foreach( $custom_fields as $field=>$v){
+                                                update_post_meta( $postid, $v, trim( stripslashes( $doc->getElementsByTagName( $v )->item(0)->nodeValue ) ) );
                                             }
                                             foreach( $matches[0] as $row){
                                                 $field_key = ltrim($row, "[");
@@ -509,6 +543,11 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                 }else{
                     return plugin_dir_path(__FILE__)."templates/single-program.php";
                 }
+            }
+
+            $standard_search = get_query_var('advanced_search');
+            if( $standard_search != ''){
+                $template = __IZIPPATH__.'templates/search.php';
             }
 
             return $template;
@@ -626,9 +665,10 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * Add Rewrite Rule
          */
         function custom_rewrite_rule() {
-            add_rewrite_rule('^search/([^/]*)/([^/]*)/?','index.php?search=$matches[1]&country=$matches[2]','top');
-            add_rewrite_rule('^search/([^/]*)/?','index.php?search=$matches[1]','top');
-            add_rewrite_endpoint( 'search', EP_PERMALINK | EP_PAGES );
+            add_rewrite_rule('^advanced-search/([^/]*)/([^/]*)/?','index.php?advanced_search=$matches[1]&country=$matches[2]','top');
+            add_rewrite_rule('^advanced-search/([^/]*)/?','index.php?advanced_search=$matches[1]','top');
+            add_rewrite_rule('^advanced-search?','index.php?advanced_search=hh_search','top');
+            add_rewrite_endpoint( 'advanced_search', EP_PERMALINK | EP_PAGES );
             add_rewrite_endpoint( 'country', EP_PERMALINK | EP_PAGES );
             flush_rewrite_rules();
         }
@@ -640,7 +680,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * @return array
          */
         function hh_add_query_vars($vars) {
-            $vars[] = 'search';
+            $vars[] = 'advanced_search';
             $vars[] = 'country';
             return $vars;
         }
@@ -652,7 +692,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * @return string
          */
         function hh_search_display( $include ) {
-            $standard_search = get_query_var('search');
+            $standard_search = get_query_var('advanced_search');
             if( $standard_search != ''){
                 $include = __IZIPPATH__.'templates/search.php';
             }
@@ -665,8 +705,8 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
         function hh_redirect(){
             $permalink = get_option('permalink_structure');
             if( empty( $permalink ) ) return;
-            if( isset( $_REQUEST['search'] ) ){
-                $key = str_replace( " ", "+", $_REQUEST['search'] );
+            if( isset( $_REQUEST['advanced_search'] ) ){
+                $key = str_replace( " ", "-", $_REQUEST['advanced_search'] );
                 $data = array(
                     'study' => @$_REQUEST['study'],
                     'gender' => @$_REQUEST['gender'],
@@ -675,12 +715,12 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                 $key_search = array();
                 foreach( $data as $k=>$v ){
                     if( !empty( $v ) ){
-                        $key_search[$k] = str_replace( " ", "+", $v );
+                        $key_search[$k] = str_replace( " ", "-", $v );
                     }
                 }
-                $url = '/search/'.$key;
+                $url = '/advanced-search/'.$key;
                 if( isset( $_REQUEST['country'] ) ){
-                    $url .= '/'.str_replace( " ", "+", $_REQUEST['country'] );
+                    $url .= '/'.str_replace( " ", "-", $_REQUEST['country'] );
                 }
                 wp_redirect( add_query_arg( $key_search, home_url( $url ) ) );
                 exit();
@@ -694,16 +734,20 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * @return string
          */
         function hh_change_title( $title, $sep ){
-            $title = '';
-            $condition = get_query_var( 'search' );
-            $paged = get_query_var( 'paged' );
-            if( !empty( $condition ) && !empty( $paged) ){
-                $title = str_replace( "+", "", $condition). ' | ';
+            $condition = get_query_var( 'advanced_search' );
+            if( !empty( $condition ) ){
+                $country = get_query_var( 'country' );
+                if( $country == '0'){
+                    $country = "All countries";
+                }
+                if( $condition == 'hh_search'){
+                    $condition = "All";
+                }
+                $title = 'Search Results for ';
+                $title .= str_replace( "-", " ", $condition );
+                $title .= ", ".str_replace( "-", " ", $country );
+                $title .= " ";
             }
-            if( !empty( $condition )){
-                $title = str_replace( "+", "", $condition). ' | ';
-            }
-
             return $title;
         }
 

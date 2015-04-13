@@ -12,15 +12,16 @@ $countries = izw_all_countries(); ?>
                             <h4>Search Early Access Programs and Clinical Trials</h4>
                         </div>
                         <div class="col col_last span_4" style="text-align: right">
-                            <a href="#" class="nectar-button small regular-button" data-color-override="false"
+                            <a href="https://itunes.apple.com/us/app/mytomorrows/id967260185?ls=1&mt=8" target="_blank" class="nectar-button small regular-button" data-color-override="false"
                                data-hover-color-override="false" data-hover-text-color-override="#fff">Iphone App</a>
                         </div>
                     </div>
-                    <input type="text" name="search" value=""/>
+                    <input type="text" name="advanced_search" id="hh-search-key" value="" placeholder="Search for Drug of Condition…" />
                     <input type="image" src="<?php echo __IZIPURL__; ?>assets/front-end/images/search.png"/>
 
                     <div class="clear"></div>
                 </div>
+                <label for="study">Study:</label>
                 <select name="study" id="study">
                     <option value="0">Clinical Trial & Early Access Program's</option>
                     <?php
@@ -72,6 +73,34 @@ $countries = izw_all_countries(); ?>
             </style>
             <script type="text/javascript">
                 jQuery(document).ready(function ($) {
+                    function unique(list) {
+                        var result = [];
+                        $.each(list, function(i, e) {
+                            if ($.inArray(e, result) == -1) result.push(e);
+                        });
+                        return result;
+                    }
+                    var data = {
+                        'action': 'izw_search_ajax'
+                    };
+                    var k2 = null;
+                    // since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
+                    $.post('<?php echo admin_url( 'admin-ajax.php' ); ?>', data, function(response) {
+                        $( ".izw-overLay").hide();
+                        k2 = response.split(',');
+                        k2 = unique( k2 );
+                        $( "#hh-search-key" ).autocomplete({
+                            source: function(request, response) {
+                                var re = $.ui.autocomplete.escapeRegex(request.term);
+                                var matcher = new RegExp( "^" + re, "i" );
+                                var a = $.grep( k2, function(item,index){
+                                    return matcher.test(item);
+                                });
+                                response( a.slice(0, 5) );
+                            },
+                            autoFocus: true
+                        })
+                    });
                     $("#country").chosen();
                     $("#gender").chosen();
                     $("#age").chosen();
@@ -91,12 +120,13 @@ $countries = izw_all_countries(); ?>
     <div class="row" style="z-index: 1;position: relative;min-height: 300px;">
         <div class="col span_9 col_first">
             <?php
-            $condition = get_query_var( 'search' );
+            $condition = get_query_var( 'advanced_search' );
             $country = get_query_var( 'country' );
             if (isset($condition)) {
                 global $is_search_program, $wpdb;
-                $condition = trim( str_replace( "+", " ", $condition ) );
-                $country = trim( str_replace( "+", " ", @$country ) );
+                if( $condition == 'hh_search' || $condition == '0'){ $condition ='';}
+                $condition = trim( str_replace( "-", " ", $condition ) );
+                $country = trim( str_replace( "-", " ", @$country ) );
                 $post_ids = array();
                 $is_search_program = true;
                 $data_search = array(
@@ -140,7 +170,7 @@ $countries = izw_all_countries(); ?>
                     $exc_count = $wpdb->get_var($SQL);
                 }
                 $count_p = $wpdb->get_col($search_sql . $where);
-                $page = (get_query_var('paged')) ? get_query_var('paged') : 1;
+                $page = $_REQUEST['pg'] ? $_REQUEST['pg'] : 1;
                 if ((int)$page < 0) $page = 1;
                 $page = ceil($page) - 1;
                 $perpage = 20;
@@ -212,9 +242,9 @@ $countries = izw_all_countries(); ?>
                                     if ($i == 1 && ($hh_p + 1) != 1) {
                                         ?>
                                         <a data-page="<?php echo $i; ?>" class="page larger izw_first"
-                                           href="<?php echo add_query_arg(array('paged' => 1)); ?>">First</a>
+                                           href="<?php echo add_query_arg(array('pg' => 1)); ?>">First</a>
                                         <a data-page="<?php echo $i; ?>" class="page larger izw_prev"
-                                           href="<?php echo add_query_arg(array('paged' => $prev_page)); ?>">Prev</a>
+                                           href="<?php echo add_query_arg(array('pg' => $prev_page)); ?>">Prev</a>
                                     <?php
                                     }
                                     if ((($hh_p + 1) - $i) == 3) {
@@ -224,7 +254,7 @@ $countries = izw_all_countries(); ?>
                                     } elseif ((($hh_p + 1) - $i) < 3 && (($hh_p + 1) - $i) > 0) {
                                         ?>
                                         <a data-page="<?php echo $i; ?>" class="page larger"
-                                           href="<?php echo add_query_arg(array('paged' => $i)); ?>"><?php echo $i; ?></a>
+                                           href="<?php echo add_query_arg(array('pg' => $i)); ?>"><?php echo $i; ?></a>
                                     <?php
                                     } elseif ($i == ($hh_p + 1)) {
                                         ?>
@@ -233,7 +263,7 @@ $countries = izw_all_countries(); ?>
                                     } elseif ($i - ($hh_p + 1) > 0 && $i - ($hh_p + 1) < 3) {
                                         ?>
                                         <a data-page="<?php echo $i; ?>" class="page larger"
-                                           href="<?php echo add_query_arg(array('paged' => $i)); ?>"><?php echo $i; ?></a>
+                                           href="<?php echo add_query_arg(array('pg' => $i)); ?>"><?php echo $i; ?></a>
                                     <?php
                                     } elseif (($i - ($hh_p + 1)) == 3) {
                                         ?>
@@ -243,9 +273,9 @@ $countries = izw_all_countries(); ?>
                                     if ($i == $iz_page && ($hh_p + 1) != $iz_page) {
                                         ?>
                                         <a data-page="<?php echo $i; ?>" class="page larger izw_next"
-                                           href="<?php echo add_query_arg(array('paged' => $next_page)); ?>">Next</a>
+                                           href="<?php echo add_query_arg(array('pg' => $next_page)); ?>">Next</a>
                                         <a data-page="<?php echo $i; ?>" class="page larger izw_last"
-                                           href="<?php echo add_query_arg(array('paged' => $iz_page)); ?>">Last</a>
+                                           href="<?php echo add_query_arg(array('pg' => $iz_page)); ?>">Last</a>
                                     <?php
                                     }
                                 }
@@ -314,6 +344,7 @@ $countries = izw_all_countries(); ?>
         </div>
         <div id="sidebar" class="col span_3 col_last">
             <div class="hh_notice">
+                <img src="<?php echo __IZIPURL__; ?>assets/front-end/images/mt_alert_banner.gif">
                 <h3>Be the first to know when a new drug for this condition is available</h3>
             </div>
             <!--END .hh_notice -->
@@ -337,15 +368,16 @@ $countries = izw_all_countries(); ?>
                     </p>
 
                     <p>
-                        <input type="submit" name="send_mail" value="Singup"/>
+                        <input type="submit" name="send_mail" value="Sign-up"/>
                     </p>
                 </form>
             </div>
             <!-- END .hh_notification -->
-            <div class="hh_counter">
+            <div id="sidebar" class="hh_counter">
                 <?php echo do_shortcode( '[milestone symbol_position="after" color="Accent-Color" terms="exclude-clinical-trials" counter_type="eap" subject="Ongoing Early Access Programs" symbol=""]'); ?>
 
                 <?php echo do_shortcode( '[milestone symbol_position="after" color="Extra-Color-1" terms="include-clinical-trials" counter_type="c" subject="Ongoing Clinical Trials" symbol=""]');?>
+                <?php dynamic_sidebar('izw-program'); ?>
             </div>
             <!-- END .hh_counter -->
         </div>

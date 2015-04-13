@@ -440,3 +440,78 @@ function hh_update_autocomplete_file( $meta_key = 'condition'){
     fwrite($fp,implode( ",", $condition  ) );
     fclose($fp);
 }
+function hh_meta_form( $post = null ) {
+    global $wpdb;
+    $post = get_post( $post );
+
+    /**
+     * Filter the number of custom fields to retrieve for the drop-down
+     * in the Custom Fields meta box.
+     *
+     * @since 2.1.0
+     *
+     * @param int $limit Number of custom fields to retrieve. Default 30.
+     */
+    $limit = apply_filters( 'postmeta_form_limit', 50 );
+    $sql = "SELECT meta_key
+		FROM $wpdb->postmeta
+		GROUP BY meta_key
+		HAVING meta_key NOT LIKE %s
+		ORDER BY meta_key
+		LIMIT %d";
+    $keys = $wpdb->get_col( $wpdb->prepare( $sql, $wpdb->esc_like( '_' ) . '%', $limit ) );
+    if ( $keys ) {
+        natcasesort( $keys );
+        $meta_key_input_id = 'metakeyselect';
+    } else {
+        $meta_key_input_id = 'metakeyinput';
+    }
+    $options = get_option( 'izweb_custom_fields' );
+    $keys = array_merge( $keys, $options );
+    ?>
+    <p><strong><?php _e( 'Add New Custom Field:' ) ?></strong></p>
+    <table id="newmeta">
+        <thead>
+        <tr>
+            <th class="left"><label for="<?php echo $meta_key_input_id; ?>"><?php _ex( 'Name', 'meta name' ) ?></label></th>
+            <th><label for="metavalue"><?php _e( 'Value' ) ?></label></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr>
+            <td id="newmetaleft" class="left">
+                <?php if ( $keys ) { ?>
+                    <select id="metakeyselect" name="metakeyselect">
+                        <option value="#NONE#"><?php _e( '&mdash; Select &mdash;' ); ?></option>
+                        <?php
+
+                        foreach ( $keys as $key ) {
+                            if ( is_protected_meta( $key, 'post' ) || ! current_user_can( 'add_post_meta', $post->ID, $key ) )
+                                continue;
+                            echo "\n<option value='" . esc_attr($key) . "'>" . esc_html($key) . "</option>";
+                        }
+                        ?>
+                    </select>
+                    <input class="hide-if-js" type="text" id="metakeyinput" name="metakeyinput" value="" />
+                    <a href="#postcustomstuff" class="hide-if-no-js" onclick="jQuery('#metakeyinput, #metakeyselect, #enternew, #cancelnew').toggle();return false;">
+                        <span id="enternew"><?php _e('Enter new'); ?></span>
+                        <span id="cancelnew" class="hidden"><?php _e('Cancel'); ?></span></a>
+                <?php } else { ?>
+                    <input type="text" id="metakeyinput" name="metakeyinput" value="" />
+                <?php } ?>
+            </td>
+            <td><textarea id="metavalue" name="metavalue" rows="2" cols="25"></textarea></td>
+        </tr>
+
+        <tr><td colspan="2">
+                <div class="submit">
+                    <?php submit_button( __( 'Add Custom Field' ), 'secondary', 'addmeta', false, array( 'id' => 'newmeta-submit', 'data-wp-lists' => 'add:the-list:newmeta' ) ); ?>
+                </div>
+                <?php wp_nonce_field( 'add-meta', '_ajax_nonce-add-meta', false ); ?>
+            </td></tr>
+        </tbody>
+    </table>
+<?php
+
+}

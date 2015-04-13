@@ -171,13 +171,13 @@ input.error {
     font-weight: bold;
 }
 #sidebar.izweb .widget h4.izw-orange,#sidebar.izweb.orange .widget h4{
-    background: #ff5d52;
+    background: #0fb1f9;
 }
 .izweb-item.include-clinical-trials  a.izw-detail {
-    background: #ff5d52;
+    background: #0fb1f9;
 }
 .izweb-item.include-clinical-trials  a.izw-title-link,.izweb-item.include-clinical-trials a.izw-title-link:visited {
-    color: #ff5d52;
+    color: #0fb1f9;
 }
 #search-outer .ui-widget-content li:hover, .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus {
     background: silver !important;
@@ -231,7 +231,7 @@ h4.box-shadow {
     padding: 12px 13px !important;
     padding-left: 42px !important;
     padding-right: 42px !important;
-    top: 4 !important;
+    top: 4px !important;
 	box-shadow: none!important;
 	-o-box-shadow: none!important;
 	-moz-box-shadow: none!important;
@@ -322,6 +322,9 @@ h4.box-shadow {
 }
 #hh_search input[type="text"].error{
     background: #f8f9a0;
+}
+.nectar-milestone .number.c span{
+    color: #0fb1f9;
 }
 @media screen and (max-width: 1024px){
     .izweb-item .izweb-list-fields ul li label {

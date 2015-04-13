@@ -268,7 +268,7 @@ function hh_search_program( $atts ){
                     <div class="izw-row">
                         <div class="filter-item">
                             <label for="">Drug or Condition?</label>
-                            <input type="text" name="drug_condition" id="drug_condition" value="<?php print htmlspecialchars( str_replace("\'", "'", $data_search['drug_condition'])); ?>" placeholder="e.g. Depression" />
+                            <input type="text" name="drug_condition" id="drug_condition" value="<?php print htmlspecialchars( str_replace("\'", "'", $data_search['drug_condition'])); ?>" placeholder="e.g. Melanoma" />
                             <div class="clear"></div>
                         </div>
                         <div class="filter-item">
@@ -525,13 +525,43 @@ function hh_search( $atts ){
     ?>
     <form name="hh_search" id="hh_search_form" action="" method="get" target="_blank">
         <div id="hh_search">
-            <input type="text" id="search" name="search" value="" />
+            <input type="text" id="hh-search-key" name="advanced_search" value="" placeholder="Search for Drug or Condition…" />
             <input type="image" src="<?php echo __IZIPURL__; ?>assets/front-end/images/search.png" />
             <div class="clear"></div>
         </div>
     </form>
     <script type="text/javascript">
         jQuery(document).ready(function($){
+            function unique(list) {
+                var result = [];
+                $.each(list, function(i, e) {
+                    if ($.inArray(e, result) == -1) result.push(e);
+                });
+                return result;
+            }
+            var data = {
+                'action': 'izw_search_ajax'
+            };
+
+            // since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
+            $.post('<?php echo admin_url( 'admin-ajax.php' ); ?>', data, function(response) {
+                $( ".izw-overLay").hide();
+                k1 = response.split(',');
+                k1 = unique( k1 );
+                $( "#hh-search-key" ).autocomplete({
+                    source: function(request, response) {
+                        /*var results = $.ui.autocomplete.filter(k1, request.term);
+                         response(results.slice(0, 5));*/
+                        var re = $.ui.autocomplete.escapeRegex(request.term);
+                        var matcher = new RegExp( "^" + re, "i" );
+                        var a = $.grep( k1, function(item,index){
+                            return matcher.test(item);
+                        });
+                        response( a.slice(0, 5) );
+                    },
+                    autoFocus: true
+                })
+            });
             $("#hh_search_form").validate({
                 rules: {
                     search: "required"

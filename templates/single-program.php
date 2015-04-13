@@ -144,7 +144,7 @@ $blog_type = $options['blog_type'];
             ?>
             <div id="sidebar" class="col span_3 col_last izweb <?php echo $sidebar_class; ?>">
                 <div id="izweb-program-widget" class="widget izweb-program-widget">
-                    <div style="display: none;" class="program-hastag">@mymotorrows%20%23<?php echo $hashtag; ?></div>
+                    <div style="display: none;" class="program-hastag">@myTomorrows%20%23<?php echo $hashtag; ?></div>
                     <h4 class="<?php echo $class; ?> box-shadow" style="font-size: 0.8em !important;"><?php echo $term_title; ?></h4>
                     <h4 class="<?php echo $class; ?>">Program Details</h4>
                     <div class="widget-contents">
