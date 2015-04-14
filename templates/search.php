@@ -16,7 +16,7 @@ $countries = izw_all_countries(); ?>
                                data-hover-color-override="false" data-hover-text-color-override="#fff">Iphone App</a>
                         </div>
                     </div>
-                    <input type="text" name="advanced_search" id="hh-search-key" value="" placeholder="Search for Drug of Condition…" />
+                    <input type="text" name="advanced_search" id="hh-search-key" value="" placeholder="Search for Drug or Condition…" />
                     <input type="image" src="<?php echo __IZIPURL__; ?>assets/front-end/images/search.png"/>
 
                     <div class="clear"></div>
@@ -377,7 +377,7 @@ $countries = izw_all_countries(); ?>
                 <?php echo do_shortcode( '[milestone symbol_position="after" color="Accent-Color" terms="exclude-clinical-trials" counter_type="eap" subject="Ongoing Early Access Programs" symbol=""]'); ?>
 
                 <?php echo do_shortcode( '[milestone symbol_position="after" color="Extra-Color-1" terms="include-clinical-trials" counter_type="c" subject="Ongoing Clinical Trials" symbol=""]');?>
-                <?php dynamic_sidebar('izw-program'); ?>
+                <?php dynamic_sidebar('izw-result-sidebar'); ?>
             </div>
             <!-- END .hh_counter -->
         </div>

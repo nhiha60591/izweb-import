@@ -575,3 +575,7 @@ function hh_search( $atts ){
     <?php
     return ob_get_clean();
 }
+add_shortcode( 'search_results', 'hh_search_results');
+function hh_search_results( $atts ){
+    return include( __IZIPPATH__."templates/short-code-search-result.php");
+}

@@ -9,7 +9,7 @@
 Plugin Name: Izweb Import Plugin
 Plugin URI: https://github.com/nhiha60591/izweb-import/
 Description: Import File from zip file
-Version: 4.0.0
+Version: 4.0.1
 Author: Izweb Team
 Author URI: https://github.com/nhiha60591
 Text Domain: izweb-import
@@ -204,7 +204,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             add_submenu_page( 'edit.php?post_type=program', __( 'Select fields', __TEXTDOMAIN__ ), __( 'Select fields', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-fields', array( __CLASS__, 'setting_page' ) );
             add_submenu_page( 'edit.php?post_type=program', __( 'Remove posts', __TEXTDOMAIN__ ), __( 'Remove posts', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-remove-posts', array( __CLASS__, 'remove_posts_page' ) );
             add_submenu_page( 'edit.php?post_type=program', __( 'Search filters', __TEXTDOMAIN__ ), __( 'Search filters', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-search-filters', array( __CLASS__, 'search_filters_page' ) );
-            //add_submenu_page( 'edit.php?post_type=program', __( 'Search Results Template', __TEXTDOMAIN__ ), __( 'Search Results Template', __TEXTDOMAIN__ ), 'manage_options', 'izweb-import-search-filters', array( __CLASS__, 'search_filters_page' ) );
+            add_submenu_page( 'edit.php?post_type=program', __( 'Template Settings', __TEXTDOMAIN__ ), __( 'Template Settings', __TEXTDOMAIN__ ), 'manage_options', 'izweb-template-settings', array( __CLASS__, 'template_settings' ) );
         }
         function post_custom_meta_box($post) {
             ?>
@@ -258,6 +258,9 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             wp_enqueue_style('dashboard');
             wp_enqueue_script('dashboard');
             include "includes/admin/search-filters.php";
+        }
+        function template_settings(){
+            include "templates/template-settings.php";
         }
         /**
          * Register Post Type Program
@@ -545,10 +548,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                 }
             }
 
-            $standard_search = get_query_var('advanced_search');
-            if( $standard_search != ''){
-                $template = __IZIPPATH__.'templates/search.php';
-            }
+
 
             return $template;
         }
@@ -587,20 +587,40 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          */
         function plugin_widgets_init(){
             register_sidebar( array(
-                'name' => __( 'Program Sidebar', 'izweb' ),
+                'name' => __( 'Program Sidebar', 'izw-import' ),
                 'id' => 'izw-program',
-                'description' => __( 'Widgets in this area will be shown below program single page', 'theme-slug' ),
+                'description' => __( 'Widgets in this area will be shown below program single page', 'izw-import' ),
                 'before_widget' => '<div id="%1$s" class="widget %2$s">',
                 'after_widget'  => '</div>',
                 'before_title' => '<h4>',
                 'after_title' => '</h4>',
             ) );
             register_sidebar( array(
-                'name' => __( 'Below Search Sidebar', 'izweb' ),
+                'name' => __( 'Below Search Sidebar', 'izw-import' ),
                 'id' => 'izw-below-search',
-                'description' => __( 'Widgets in this area will be shown below program search page', 'theme-slug' ),
+                'description' => __( 'Widgets in this area will be shown below program search page', 'izw-import' ),
+                'before_widget' => '<div id="%1$s" class="widget %2$s">',
+                'after_widget'  => '</div>',
                 'before_title' => '<h1>',
                 'after_title' => '</h1>',
+            ) );
+            register_sidebar( array(
+                'name' => __( 'Result Sidebar', 'izw-import' ),
+                'id' => 'izw-result-sidebar',
+                'description' => __( 'Widgets in this area will be shown in search results', 'izw-import' ),
+                'before_widget' => '<div id="%1$s" class="widget %2$s">',
+                'after_widget'  => '</div>',
+                'before_title' => '<h4>',
+                'after_title' => '</h4>',
+            ) );
+            register_sidebar( array(
+                'name' => __( 'Footer Program', 'izw-import' ),
+                'id' => 'izw-footer-program',
+                'description' => __( 'Widgets in this area will be shown in footer of program page', 'izw-import' ),
+                'before_widget' => '<div id="%1$s" class="widget %2$s">',
+                'after_widget'  => '</div>',
+                'before_title' => '<h4>',
+                'after_title' => '</h4>',
             ) );
         }
 
@@ -665,9 +685,11 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * Add Rewrite Rule
          */
         function custom_rewrite_rule() {
-            add_rewrite_rule('^advanced-search/([^/]*)/([^/]*)/?','index.php?advanced_search=$matches[1]&country=$matches[2]','top');
-            add_rewrite_rule('^advanced-search/([^/]*)/?','index.php?advanced_search=$matches[1]','top');
-            add_rewrite_rule('^advanced-search?','index.php?advanced_search=hh_search','top');
+            $page_id = get_option( '_izw_template_id');
+            $page_id = $page_id ? $page_id : 0;
+            $post_name = get_post( $page_id )->post_name;
+            add_rewrite_rule('^'.$post_name.'/([^/]*)/([^/]*)/?','index.php?page_id='.$page_id.'&advanced_search=$matches[1]&country=$matches[2]','top');
+            add_rewrite_rule('^'.$post_name.'/([^/]*)/?','index.php?page_id='.$page_id.'&advanced_search=$matches[1]','top');
             add_rewrite_endpoint( 'advanced_search', EP_PERMALINK | EP_PAGES );
             add_rewrite_endpoint( 'country', EP_PERMALINK | EP_PAGES );
             flush_rewrite_rules();
@@ -704,7 +726,9 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          */
         function hh_redirect(){
             $permalink = get_option('permalink_structure');
-            if( empty( $permalink ) ) return;
+            if( empty( $permalink )  ) return;
+            $page_id = get_option( '_izw_template_id'); $page_id = $page_id ? $page_id : 0;
+            if( $page_id == 0 ) return;
             if( isset( $_REQUEST['advanced_search'] ) ){
                 $key = str_replace( " ", "-", $_REQUEST['advanced_search'] );
                 $data = array(
@@ -718,7 +742,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
                         $key_search[$k] = str_replace( " ", "-", $v );
                     }
                 }
-                $url = '/advanced-search/'.$key;
+                $url = '/'.get_post( $page_id )->post_name.'/'.$key;
                 if( isset( $_REQUEST['country'] ) ){
                     $url .= '/'.str_replace( " ", "-", $_REQUEST['country'] );
                 }
