@@ -1,7 +1,7 @@
 <?php ob_start(); ?>
 <div class="hh_notice">
     <img src="<?php echo __IZIPURL__; ?>assets/front-end/images/mt_alert_banner.gif">
-    <h3>Be the first to know when a new drug for this condition is available</h3>
+    Be the first to know when a new drug for this condition is available
 </div>
 <?php
 $condition = get_query_var('advanced_search');

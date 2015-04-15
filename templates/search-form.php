@@ -56,6 +56,9 @@
     #advanced-search select:first-child {
         margin-left: 0px;
     }
+    .hh-search-box{
+        z-index: 999999;
+    }
 </style>
 <script type="text/javascript">
     jQuery(document).ready(function ($) {
