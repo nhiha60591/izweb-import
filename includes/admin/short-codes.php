@@ -575,7 +575,11 @@ function hh_search( $atts ){
     <?php
     return ob_get_clean();
 }
-add_shortcode( 'search_results', 'hh_search_results');
-function hh_search_results( $atts ){
+add_shortcode( 'advanced_search_results', 'hh_advanced_search_results');
+function hh_advanced_search_results( $atts ){
     return include( __IZIPPATH__."templates/short-code-search-result.php");
+}
+add_shortcode( 'advanced_search_form', 'hh_advanced_search_form');
+function hh_advanced_search_form($atts){
+    return include( __IZIPPATH__."templates/search-form.php");
 }
