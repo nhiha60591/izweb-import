@@ -1,7 +1,23 @@
-<?php ob_start(); $countries = izw_all_countries(); ?>
+<?php
+    ob_start(); $countries = izw_all_countries();
+$condition = get_query_var('advanced_search');
+$country = get_query_var('country');
+if ($condition == 'hh_search' || $condition == '0') {
+    $condition = '';
+}
+$condition = trim(str_replace("-", " ", $condition));
+$country = trim(str_replace("-", " ", @$country));
+$data_search = array(
+    'drug_condition' => @$condition,
+    'country' => @$country,
+    'study' => @$_REQUEST['study'],
+    'gender' => @$_REQUEST['gender'],
+    'age_group' => @$_REQUEST['age'],
+);
+?>
 <form name="advanced-search" action="" method="get" id="advanced-search">
     <div id="hh_search" style="margin-bottom: 10px;">
-        <input type="text" name="advanced_search" id="hh-search-key" value=""
+        <input type="text" name="advanced_search" id="hh-search-key" value="<?php echo @$data_search['drug_condition'] ; ?>"
                placeholder="Search for Drug or Condition…"/>
         <input type="image" src="<?php echo __IZIPURL__; ?>assets/front-end/images/search.png"/>
 
@@ -9,32 +25,32 @@
     </div>
     <label for="study">Study:</label>
     <select name="study" id="study">
-        <option value="0">Clinical Trial & Early Access Program's</option>
+        <option <?php selected( $data_search['study'], '0'); ?> value="0">Clinical Trial & Early Access Program's</option>
         <?php
         $terms = get_terms('program_cat');
         foreach ($terms as $term):
             ?>
-            <option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
+            <option <?php selected( $data_search['study'], $term->term_id ); ?> value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
         <?php endforeach; ?>
     </select>
     <label for="gender">Gender:</label>
     <select name="gender" id="gender">
-        <option value="Both">Both</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
+        <option <?php selected( $data_search['gender'], 'Both' ); ?> value="Both">Both</option>
+        <option <?php selected( $data_search['gender'], 'Male' ); ?> value="Male">Male</option>
+        <option <?php selected( $data_search['gender'], 'Female' ); ?> value="Female">Female</option>
     </select>
     <label for="">Age:</label>
     <select name="age" id="age">
-        <option value="0">Any</option>
-        <option value="0-17">0-17</option>
-        <option value="18-65">18-65</option>
-        <option value="65+">65+</option>
+        <option <?php selected( $data_search['age_group'], '0' ); ?> value="0">Any</option>
+        <option <?php selected( $data_search['age_group'], '0-17' ); ?> value="0-17">0-17</option>
+        <option <?php selected( $data_search['age_group'], '18-65' ); ?> value="18-65">18-65</option>
+        <option <?php selected( $data_search['age_group'], '65+' ); ?> value="65+">65+</option>
     </select>
     <label for="country">Country:</label>
     <select name="country" id="country">
-        <option value="0">All</option>
+        <option <?php selected( $data_search['country'], '0' ); ?> value="0">All</option>
         <?php foreach ($countries as $v): ?>
-            <option <?php selected(str_replace("\'", "'", $data_search['country']), str_replace("\'", "'", $v)); ?>
+            <option <?php selected( $data_search['country'], $v ); ?> <?php selected(str_replace("\'", "'", $data_search['country']), str_replace("\'", "'", $v)); ?>
                 value="<?php echo $v; ?>"><?php echo $v; ?></option>
         <?php endforeach; ?>
     </select>
