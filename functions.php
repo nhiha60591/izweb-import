@@ -243,7 +243,6 @@ function izw_all_countries(){
         'Russia',
         'Spain',
         'Sweden',
-        'Afghanistan',
         'Albania',
         'Algeria',
         'Angola',

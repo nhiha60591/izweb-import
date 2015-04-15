@@ -1,16 +1,6 @@
 <?php ob_start(); $countries = izw_all_countries(); ?>
 <form name="advanced-search" action="" method="get" id="advanced-search">
-    <div id="hh_search">
-        <div class="row">
-            <div class="col col_first span_8" style="text-align: left;">
-                <h4>Search Early Access Programs and Clinical Trials</h4>
-            </div>
-            <div class="col col_last span_4" style="text-align: right">
-                <a href="https://itunes.apple.com/us/app/mytomorrows/id967260185?ls=1&mt=8" target="_blank"
-                   class="nectar-button small regular-button" data-color-override="false"
-                   data-hover-color-override="false" data-hover-text-color-override="#fff">Iphone App</a>
-            </div>
-        </div>
+    <div id="hh_search" style="margin-bottom: 10px;">
         <input type="text" name="advanced_search" id="hh-search-key" value=""
                placeholder="Search for Drug or Condition…"/>
         <input type="image" src="<?php echo __IZIPURL__; ?>assets/front-end/images/search.png"/>

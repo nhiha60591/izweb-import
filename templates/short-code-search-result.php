@@ -1,5 +1,4 @@
 <?php ob_start(); ?>
-    <div class="row" style="z-index: 1;position: relative;min-height: 300px;">
         <?php
         $condition = get_query_var('advanced_search');
         $country = get_query_var('country');
@@ -56,7 +55,7 @@
             $page = $_REQUEST['pg'] ? $_REQUEST['pg'] : 1;
             if ((int)$page < 0) $page = 1;
             $page = ceil($page) - 1;
-            $perpage = 20;
+            $perpage = 10;
             $hh_p = $page;
             $start = $page * $perpage;
             $post_ids = $wpdb->get_col($search_sql . $where . " ORDER BY `study` DESC LIMIT {$start},{$perpage}");
@@ -220,6 +219,5 @@
             wp_reset_postdata();
         }
         ?>
-    </div>
 <?php return @$error . @$search_results;
 ?>

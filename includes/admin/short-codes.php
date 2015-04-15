@@ -583,3 +583,7 @@ add_shortcode( 'advanced_search_form', 'hh_advanced_search_form');
 function hh_advanced_search_form($atts){
     return include( __IZIPPATH__."templates/search-form.php");
 }
+add_shortcode( 'advanced_search_sidebar', 'hh_advanced_search_sidebar');
+function hh_advanced_search_sidebar($atts){
+    return include( __IZIPPATH__."templates/search-sidebar.php");
+}
