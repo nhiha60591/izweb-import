@@ -326,6 +326,9 @@ h4.box-shadow {
 .nectar-milestone .number.c span{
     color: #0fb1f9;
 }
+.hien-box{
+    z-index: 999 !important;
+}
 @media screen and (max-width: 1024px){
     .izweb-item .izweb-list-fields ul li label {
         min-width: 120px;
