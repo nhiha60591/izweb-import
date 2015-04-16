@@ -58,7 +58,7 @@
             $perpage = 10;
             $hh_p = $page;
             $start = $page * $perpage;
-            $post_ids = $wpdb->get_col($search_sql . $where . " ORDER BY `study` DESC LIMIT {$start},{$perpage}");
+            $post_ids = $wpdb->get_col($search_sql . $where . " ORDER BY `study` ASC LIMIT {$start},{$perpage}");
             $search_results = '';
             if (isset($data_search['study']) && $data_search['study'] != '0') {
                 $exc = get_term_by('id', $data_search['study'], 'program_cat');
