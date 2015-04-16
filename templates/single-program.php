@@ -121,6 +121,9 @@ $blog_type = $options['blog_type'];
 
 
                 <?php } ?>
+                <div id="program-footer" class="program-footer" style="margin-top: 60px;">
+                    <?php dynamic_sidebar('izw-footer-program'); ?>
+                </div>
 
             </div><!--/span_9-->
 
@@ -225,7 +228,4 @@ $blog_type = $options['blog_type'];
     </div><!--/container-->
 
     </div><!--/container-wrap-->
-    <div id="program-footer" class="program-footer">
-        <?php dynamic_sidebar('izw-footer-program'); ?>
-    </div>
 <?php get_footer(); ?>
