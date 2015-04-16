@@ -38,7 +38,7 @@ $country = trim(str_replace("-", " ", @$country));
                 'email' => $_POST['sidebar_noti_email'],
             );
             $wpdb->insert( $izw_notification, $data );
-            $sidebar_noti_mess = "Your notification sent! Thank you for send notification for us.";
+            $sidebar_noti_mess = "Notification Received.";
         }
     }
     ?>

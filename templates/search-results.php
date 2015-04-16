@@ -49,7 +49,7 @@
                                     'email' => $_POST['noti_email'],
                                 );
                                 $wpdb->insert( $izw_notification, $data );
-                                $noti_mess = "Your notification sent! Thank you for send notification for us.";
+                                $noti_mess = "Notification Received.";
                             }
                         }
                         ?>
