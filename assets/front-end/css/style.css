@@ -323,6 +323,17 @@ h4.box-shadow {
 #hh_search input[type="text"].error{
     background: #f8f9a0;
 }
+.izw-simple-search #hh_search input[type="text"]{
+    width: 650px;
+    font-size: 18px;
+}
+.izw-simple-search #hh_search input{
+    height: 50px;
+}
+.izw-simple-search #hh_search{
+    width: 700px;
+}
+
 .nectar-milestone .number.c span{
     color: #0fb1f9;
 }

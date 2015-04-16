@@ -400,7 +400,6 @@ function izw_all_countries(){
         'Uganda',
         'Ukraine',
         'United Arab Emirates',
-        'United Kingdom',
         'Uruguay',
         'Uzbekistan',
         'Vanuatu',

@@ -523,7 +523,7 @@ add_shortcode( 'search', 'hh_search' );
 function hh_search( $atts ){
     ob_start();
     ?>
-    <form name="hh_search" id="hh_search_form" action="" method="get" target="_blank">
+    <form name="hh_search" class="izw-simple-search" id="hh_search_form" action="" method="get">
         <div id="hh_search">
             <input type="text" id="hh-search-key" name="advanced_search" value="" placeholder="Search for Drug or Condition…" />
             <input type="image" src="<?php echo __IZIPURL__; ?>assets/front-end/images/search.png" />

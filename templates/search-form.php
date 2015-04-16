@@ -108,9 +108,9 @@ $data_search = array(
             })
         });
         $("#country").chosen();
-        $("#gender").chosen();
-        $("#age").chosen();
-        $("#study").chosen();
+        $("#gender").chosen({disable_search_threshold: 10});
+        $("#age").chosen({disable_search_threshold: 10});
+        $("#study").chosen({disable_search_threshold: 10});
         $("#advanced-search").validate({
             rules: {
                 search: "required"

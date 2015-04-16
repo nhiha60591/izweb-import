@@ -80,9 +80,8 @@
             <div class="izweb-search-results">
                 <?php dynamic_sidebar('izw-below-search'); ?>
                 <?php foreach ($post_ids as $id) {
-                    $post = get_post($id);
-                    setup_postdata($post);
-                    $terms = wp_get_post_terms(get_the_ID(), 'program_cat');
+                    $sprogram = get_post($id);
+                    $terms = wp_get_post_terms( $id , 'program_cat');
                     $termslug = array();
                     foreach ($terms as $term) {
                         $termslug[] = $term->slug;
@@ -91,7 +90,7 @@
                         <div class="izweb-item-left">
                             <div class="post-title">
                                 <a class="izw-title-link"
-                                   href="<?php echo get_the_permalink( $id ); ?>"><?php echo _substr($post->post_title, 70); ?></a>
+                                   href="<?php echo get_the_permalink( $id ); ?>"><?php echo _substr($sprogram->post_title, 70); ?></a>
                             </div>
                             <div class="post-content">
                                 <?php do_action('izweb_before_search_content', $id); ?>
@@ -100,8 +99,8 @@
                                 print_r($exc_text);
                                 if (!empty($exc_text)) {
                                     echo _substr(strip_tags($exc_text, '<p><a>'), 300);
-                                } elseif (!empty($post->post_excerpt)) {
-                                    echo _substr(strip_tags($post->post_excerpt, '<p><a>'), 300);
+                                } elseif (!empty($sprogram->post_excerpt)) {
+                                    echo _substr(strip_tags($sprogram->post_excerpt, '<p><a>'), 300);
                                 }
                                 ?>
                                 <?php izweb_show_custom_field($id); ?>
