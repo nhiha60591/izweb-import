@@ -9,7 +9,7 @@
 Plugin Name: Izweb Import Plugin
 Plugin URI: https://github.com/nhiha60591/izweb-import/
 Description: Import File from zip file
-Version: 4.0.1
+Version: 4.0.2
 Author: Izweb Team
 Author URI: https://github.com/nhiha60591
 Text Domain: izweb-import
@@ -633,6 +633,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
         function change_content( $content ){
             if ( is_singular('program') ){
                 global $post;
+                $content = get_option( 'izweb_import_content' );
                 preg_match_all("/\[[^\]]*\]/", $content, $matches );
                 $fields_key = array();
                 $fields_value = array();

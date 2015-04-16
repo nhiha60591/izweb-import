@@ -179,7 +179,6 @@
                 <h3>Sorry, no results were found!</h3>
                 <ul class="izw-error-mes-ul">
                     <li>Try other keywords or check your spelling</li>
-                    <li>Check the "include available Clinic Trials in search" option</li>
                     <li>Get notified when we have information for
                         <strong><?php print htmlspecialchars($data_search['drug_condition']); ?></strong> in
                         <strong><?php print htmlspecialchars($country); ?></strong>
