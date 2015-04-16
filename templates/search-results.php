@@ -26,6 +26,34 @@
                     </div>
                     <!--END .hh_notice -->
                     <div class="hh_notification">
+                        <?php
+                        $noti_mess = '';
+                        if( isset( $_POST['send_mail']) ){
+                            $izw_notification = $wpdb->prefix."subscription";
+                            $noti_ID = $wpdb->get_var(
+                                $wpdb->prepare(
+                                    "SELECT `ID` FROM `{$izw_notification}`
+                                WHERE `search_condition` = '%s'
+                                AND `search_country` = '%s'
+                                AND `email` = '%s'",
+                                    $_POST['noti_condition'],
+                                    $_POST['noti_country'],
+                                    $_POST['noti_email']
+                                )
+                            );
+                            if( empty( $noti_ID ) ){
+                                $data = array(
+                                    'search_condition' => $_POST['noti_condition'],
+                                    'search_country' => $_POST['noti_country'],
+                                    'date' => date("Y-m-d H:i:s"),
+                                    'email' => $_POST['noti_email'],
+                                );
+                                $wpdb->insert( $izw_notification, $data );
+                                $noti_mess = "Your notification sent! Thank you for send notification for us.";
+                            }
+                        }
+                        ?>
+                        <p style="color: green;font-size: 1.4em;"><?php echo $noti_mess; ?></p>
                         <form name="notification" action="" method="post" id="notification">
                             <p>
                                 <label for="noti_condition">Condition:</label>

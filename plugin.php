@@ -128,6 +128,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
          * Init Plugin
          */
         function init(){
+            global $wpdb;
             Izweb_Import::defines();
             Izweb_Import::includes();
             Izweb_Import::register_post_type();

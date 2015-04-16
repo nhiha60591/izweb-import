@@ -10,11 +10,10 @@
  */
 add_shortcode( 'search_program', 'hh_search_program' );
 function hh_search_program( $atts ){
-    global $post,$wpdb;
+    global $post,$wpdb,$noti_mess;
     // Attributes
     $exc = get_option( 'izweb_post_excerpt' );
     $filter_fields = get_option( 'izw_filters_ctf' );
-    $noti_mess = '';
     $exc = !empty($exc) ? $exc : 'brief_summary';
     extract( shortcode_atts(
             array(
@@ -36,30 +35,6 @@ function hh_search_program( $atts ){
         'age_group' => @$_REQUEST['age_group'],
         'sponsor' => @$_REQUEST['sponsor'],
     );
-    if( isset( $_POST['send_mail']) ){
-        $izw_notification = $wpdb->prefix."subscription";
-        $noti_ID = $wpdb->get_var(
-                        $wpdb->prepare(
-                            "SELECT `ID` FROM `{$izw_notification}`
-                            WHERE `search_condition` = '%s'
-                            AND `search_country` = '%s'
-                            AND `email` = '%s'",
-                            $_POST['noti_condition'],
-                            $_POST['noti_country'],
-                            $_POST['noti_email']
-                        )
-        );
-        if( empty( $noti_ID ) ){
-            $data = array(
-                'search_condition' => $_POST['noti_condition'],
-                'search_country' => $_POST['noti_country'],
-                'date' => date("Y-m-d H:i:s"),
-                'email' => $_POST['noti_email'],
-            );
-            $wpdb->insert( $izw_notification, $data );
-            $noti_mess = "Your notification sent! Thank you for send notification for us.";
-        }
-    }
     if(isset( $_REQUEST['izw_search'] ) ){
 		global $is_search_program;
         $post_ids = array();

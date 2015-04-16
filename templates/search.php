@@ -294,6 +294,31 @@ $countries = izw_all_countries(); ?>
                     } else {
                         $country = $data_search['country'];
                     }
+                    $noti_mess = '';
+                    if( isset( $_POST['send_mail']) ){
+                        $izw_notification = $wpdb->prefix."subscription";
+                        $noti_ID = $wpdb->get_var(
+                            $wpdb->prepare(
+                                "SELECT `ID` FROM `{$izw_notification}`
+                                WHERE `search_condition` = '%s'
+                                AND `search_country` = '%s'
+                                AND `email` = '%s'",
+                                $_POST['noti_condition'],
+                                $_POST['noti_country'],
+                                $_POST['noti_email']
+                            )
+                        );
+                        if( empty( $noti_ID ) ){
+                            $data = array(
+                                'search_condition' => $_POST['noti_condition'],
+                                'search_country' => $_POST['noti_country'],
+                                'date' => date("Y-m-d H:i:s"),
+                                'email' => $_POST['noti_email'],
+                            );
+                            $wpdb->insert( $izw_notification, $data );
+                            $noti_mess = "Your notification sent! Thank you for send notification for us.";
+                        }
+                    }
                     ?>
                     <div class="izw-error-mes">
                         <h3>Sorry, no results were found!</h3>
@@ -349,26 +374,55 @@ $countries = izw_all_countries(); ?>
             </div>
             <!--END .hh_notice -->
             <div class="hh_notification">
+                <?php
+                global $wpdb;
+                $sidebar_noti_mess = '';
+                if( isset( $_POST['send_mail_sidebar']) ){
+                    $izw_notification = $wpdb->prefix."subscription";
+                    $noti_ID = $wpdb->get_var(
+                        $wpdb->prepare(
+                            "SELECT `ID` FROM `{$izw_notification}`
+                                WHERE `search_condition` = '%s'
+                                AND `search_country` = '%s'
+                                AND `email` = '%s'",
+                            $_POST['sidebar_noti_condition'],
+                            $_POST['sidebar_noti_country'],
+                            $_POST['sidebar_noti_email']
+                        )
+                    );
+                    if( empty( $noti_ID ) ){
+                        $data = array(
+                            'search_condition' => $_POST['sidebar_noti_condition'],
+                            'search_country' => $_POST['sidebar_noti_country'],
+                            'date' => date("Y-m-d H:i:s"),
+                            'email' => $_POST['sidebar_noti_email'],
+                        );
+                        $wpdb->insert( $izw_notification, $data );
+                        $sidebar_noti_mess = "Your notification sent! Thank you for send notification for us.";
+                    }
+                }
+                ?>
+                <p style="color: green;font-size: 1.4em;"><?php echo $sidebar_noti_mess; ?></p>
                 <form name="notification" action="" method="post" id="notification">
                     <p>
                         <label for="noti_condition">Condition:</label>
-                        <input type="text" name="noti_condition" id="noti_condition"
+                        <input type="text" name="sidebar_noti_condition" id="sidebar_noti_condition"
                                value="<?php print str_replace("\'", "'", $condition ); ?>"/>
                     </p>
 
                     <p>
                         <label for="noti_country">Country:</label>
-                        <input type="text" name="noti_country" id="noti_country"
+                        <input type="text" name="sidebar_noti_country" id="sidebar_noti_country"
                                value="<?php print str_replace("\'", "'", $country); ?>"/>
                     </p>
 
                     <p>
                         <label for="noti_email">Email:</label>
-                        <input type="text" name="noti_email" id="noti_email" value=""/>
+                        <input type="text" name="sidebar_noti_email" id="sidebar_noti_email" value=""/>
                     </p>
 
                     <p>
-                        <input type="submit" name="send_mail" value="Sign-up"/>
+                        <input type="submit" name="send_mail_sidebar" value="Sign-up"/>
                     </p>
                 </form>
             </div>
