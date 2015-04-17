@@ -500,6 +500,9 @@ function hh_search( $atts ){
     ?>
     <form name="hh_search" class="izw-simple-search" id="hh_search_form" action="" method="get">
         <div id="hh_search">
+            <div class="izw-overLay">
+                <h3 style="margin-top: 30px;">Loading all data, Please wait...</h3>
+            </div>
             <input type="text" id="hh-search-key" name="advanced_search" value="" placeholder="Search for Drug or Condition…" />
             <input type="image" src="<?php echo __IZIPURL__; ?>assets/front-end/images/search.png" />
             <div class="clear"></div>

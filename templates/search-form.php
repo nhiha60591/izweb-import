@@ -17,6 +17,9 @@ $data_search = array(
 ?>
 <form name="advanced-search" action="" method="get" id="advanced-search">
     <div id="hh_search" style="margin-bottom: 10px;">
+        <div class="izw-overLay">
+            <h3 style="margin-top: 30px;">Loading all data, Please wait...</h3>
+        </div>
         <input type="text" name="advanced_search" id="hh-search-key" value="<?php echo @$data_search['drug_condition'] ; ?>"
                placeholder="Search for Drug or Condition…"/>
         <input type="image" src="<?php echo __IZIPURL__; ?>assets/front-end/images/search.png"/>
