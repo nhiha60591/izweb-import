@@ -9,7 +9,7 @@
 Plugin Name: Izweb Import Plugin
 Plugin URI: https://github.com/nhiha60591/izweb-import/
 Description: Import File from zip file
-Version: 4.0.2
+Version: 4.0.3
 Author: Izweb Team
 Author URI: https://github.com/nhiha60591
 Text Domain: izweb-import
@@ -141,8 +141,8 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             }
             if( isset( $_REQUEST['update_auto_complete'] ) && $_REQUEST['update_auto_complete'] == 'yes' ){
                 $page = $_REQUEST['page'] ? $_REQUEST['page'] : 1;
-                //wirte_text_autocomplete( 'condition', $page );
-                hh_update_autocomplete_file();
+                wirte_text_autocomplete( 'condition', $page );
+                //hh_update_autocomplete_file();
                 die();
             }
             if( isset( $_REQUEST['update_sort']) && $_REQUEST['update_sort'] == 'update'){

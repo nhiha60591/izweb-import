@@ -337,13 +337,35 @@ h4.box-shadow {
 .nectar-milestone .number.c span{
     color: #0fb1f9;
 }
-@media screen and (max-width: 1024px){
+@media all and (max-width: 1024px){
     .izweb-item .izweb-list-fields ul li label {
         min-width: 120px;
     }
+    .izw-simple-search #hh_search{
+        width: 90%;
+    }
+    .izw-simple-search #hh_search input[type="text"]{
+        width: 90%;
+    }
 }
-@media screen and (max-width: 640px) {
+@media all and (max-width: 767px) {
     .izweb-item .izweb-list-fields ul li {
         width: 100%;
+    }
+    .izw-simple-search #hh_search{
+        width: 90%;
+    }
+    .izw-simple-search #hh_search input[type="text"]{
+        width: 80%;
+        font-size: 14px;
+    }
+    #hh_search{
+        width: 98%;
+    }
+    #hh_search input[type="text"] {
+        width: 85%;
+    }
+    #advanced-search > label {
+        display: block;
     }
 }
