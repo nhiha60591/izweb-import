@@ -2,6 +2,13 @@
 <project version="4">
   <component name="PublishConfigData">
     <serverData>
+      <paths name="MyMotorrow Live">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/wp-content/plugins/izweb-import-master" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="MyMotorrow New">
         <serverdata>
           <mappings>
@@ -12,4 +19,3 @@
     </serverData>
   </component>
 </project>
-

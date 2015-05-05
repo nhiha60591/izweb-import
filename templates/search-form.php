@@ -101,7 +101,7 @@ $data_search = array(
             $("#hh-search-key").autocomplete({
                 source: function (request, response) {
                     var re = $.ui.autocomplete.escapeRegex(request.term);
-                    var matcher = new RegExp("^" + re, "i");
+                    var matcher = new RegExp("" + re, "i");
                     var a = $.grep(k2, function (item, index) {
                         return matcher.test(item);
                     });

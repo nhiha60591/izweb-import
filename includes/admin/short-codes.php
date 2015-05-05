@@ -531,11 +531,11 @@ function hh_search( $atts ){
                         /*var results = $.ui.autocomplete.filter(k1, request.term);
                          response(results.slice(0, 5));*/
                         var re = $.ui.autocomplete.escapeRegex(request.term);
-                        var matcher = new RegExp( "^" + re, "i" );
+                        /*var matcher = new RegExp( "^" + re, "i" );
                         var a = $.grep( k1, function(item,index){
                             return matcher.test(item);
-                        });
-                        response( a.slice(0, 5) );
+                        });*/
+                        response( re.slice(0, 5) );
                     },
                     autoFocus: true
                 })
