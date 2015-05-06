@@ -81,6 +81,7 @@ $data_search = array(
 </style>
 <script type="text/javascript">
     jQuery(document).ready(function ($) {
+        $( ".izw-overLay").hide();
         function unique(list) {
             var result = [];
             $.each(list, function (i, e) {
@@ -88,27 +89,19 @@ $data_search = array(
             });
             return result;
         }
-
-        var data = {
-            'action': 'izw_search_ajax'
-        };
-        var k2 = null;
-        // since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
-        $.post('<?php echo admin_url( 'admin-ajax.php' ); ?>', data, function (response) {
-            $(".izw-overLay").hide();
-            k2 = response.split(',');
-            k2 = unique(k2);
-            $("#hh-search-key").autocomplete({
+        var cache = {};
+        $.getJSON( "<?php echo __IZIPURL__;  ?>autocomplete_json.php", function( data, status, xhr ) {
+            cache = unique(data);
+            $( "#hh-search-key" ).autocomplete({
                 source: function (request, response) {
                     var re = $.ui.autocomplete.escapeRegex(request.term);
                     var matcher = new RegExp("" + re, "i");
-                    var a = $.grep(k2, function (item, index) {
+                    var a = $.grep(cache, function (item, index) {
                         return matcher.test(item);
                     });
                     response(a.slice(0, 5));
-                },
-                autoFocus: true
-            })
+                }
+            });
         });
         $("#country").chosen();
         $("#gender").chosen({disable_search_threshold: 10});

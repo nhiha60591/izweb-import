@@ -316,33 +316,19 @@ function hh_search_program( $atts ){
                         });
                         return result;
                     }
-                    /*var k1;
-                    $.get("<?php echo __IZIPURL__."autocomplete-{$key1}.txt"; ?>", function(data) {
-                        k1 = data.split(',');
-                        $( "#drug_condition" ).autocomplete({source:k1,autoFocus: true,minLength: 3})
-                    });*/
-                    var data = {
-                        'action': 'izw_search_ajax'
-                    };
-
-                    // since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
-                    $.post('<?php echo admin_url( 'admin-ajax.php' ); ?>', data, function(response) {
-                        $( ".izw-overLay").hide();
-                        k1 = response.split(',');
-                        k1 = unique( k1 );
+                    var cache = {};
+                    $.getJSON( "<?php echo __IZIPURL__;  ?>autocomplete_json.php", function( data, status, xhr ) {
+                        cache = unique(data);
                         $( "#drug_condition" ).autocomplete({
-                            source: function(request, response) {
-                                /*var results = $.ui.autocomplete.filter(k1, request.term);
-                                response(results.slice(0, 5));*/
+                            source: function (request, response) {
                                 var re = $.ui.autocomplete.escapeRegex(request.term);
-                                var matcher = new RegExp( "^" + re, "i" );
-                                var a = $.grep( k1, function(item,index){
+                                var matcher = new RegExp("" + re, "i");
+                                var a = $.grep(cache, function (item, index) {
                                     return matcher.test(item);
                                 });
-                                response( a.slice(0, 5) );
-                            },
-                            autoFocus: true
-                        })
+                                response(a.slice(0, 5));
+                            }
+                        });
                     });
                     $(".page-1").show();
                     $(".search_pagination .wp-pagenavi a").click(function(){
@@ -517,28 +503,19 @@ function hh_search( $atts ){
                 });
                 return result;
             }
-            var data = {
-                'action': 'izw_search_ajax'
-            };
-
-            // since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
-            $.post('<?php echo admin_url( 'admin-ajax.php' ); ?>', data, function(response) {
-                $( ".izw-overLay").hide();
-                k1 = response.split(',');
-                k1 = unique( k1 );
+            var cache = {};
+            $.getJSON( "<?php echo __IZIPURL__;  ?>autocomplete_json.php", function( data, status, xhr ) {
+                cache = unique(data);
                 $( "#hh-search-key" ).autocomplete({
-                    source: function(request, response) {
-                        /*var results = $.ui.autocomplete.filter(k1, request.term);
-                         response(results.slice(0, 5));*/
+                    source: function (request, response) {
                         var re = $.ui.autocomplete.escapeRegex(request.term);
-                        /*var matcher = new RegExp( "^" + re, "i" );
-                        var a = $.grep( k1, function(item,index){
+                        var matcher = new RegExp("" + re, "i");
+                        var a = $.grep(cache, function (item, index) {
                             return matcher.test(item);
-                        });*/
-                        response( re.slice(0, 5) );
-                    },
-                    autoFocus: true
-                })
+                        });
+                        response(a.slice(0, 5));
+                    }
+                });
             });
             $("#hh_search_form").validate({
                 rules: {

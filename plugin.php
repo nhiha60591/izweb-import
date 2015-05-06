@@ -9,7 +9,7 @@
 Plugin Name: Izweb Import Plugin
 Plugin URI: https://github.com/nhiha60591/izweb-import/
 Description: Import File from zip file
-Version: 4.0.4
+Version: 4.0.5
 Author: Izweb Team
 Author URI: https://github.com/nhiha60591
 Text Domain: izweb-import
@@ -56,7 +56,13 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
 
             register_activation_hook( __FILE__, array( __CLASS__, 'install' ) );
             register_deactivation_hook( __FILE__, array( __CLASS__, 'uninstall' ) );
-		
+
+            /**
+             * Update json file
+             */
+            add_action( 'save_post', array( $this, 'create_json_file' ) );
+            add_action( 'izweb_after_process_import', array( $this, 'create_json_file' ) );
+
         }
         function add_boxes(){
             add_action( 'add_meta_boxes', array( __CLASS__, 'add_meta_box' ) );
@@ -152,6 +158,10 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             }
             if( isset( $_REQUEST['check_cron']) ){
                 Izweb_Import::do_cron_notification();
+                die();
+            }
+            if( isset( $_REQUEST['create_json']) && $_REQUEST['create_json'] == 'yes' ){
+                Izweb_Import::create_json_file();
                 die();
             }
 
@@ -808,6 +818,20 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             $subject_markup = '<div class="subject">'.$subject.'</div>';
 
             return do_shortcode( '<div class="nectar-milestone" '.$symbol_markup.'> '.$number_markup.' '.$subject_markup.' </div>' );
+        }
+        function create_json_file(){
+            global $wpdb;
+
+            $sql = "SELECT A.meta_value FROM  `{$wpdb->postmeta}` A, `{$wpdb->posts}` B
+                WHERE A.post_id=B.ID
+                AND B.post_type='program'
+                AND A.meta_key='condition'";
+            $results = $wpdb->get_col($sql);
+            $conditions =  array_unique( $results );
+            $conditions = implode( ",", $conditions );
+            $conditions = explode( ",", $conditions );
+            $json_code = json_encode( $conditions );
+            file_put_contents( __IZIPPATH__. '/autocomplete_json.php', $json_code );
         }
     }
     new Izweb_Import();
