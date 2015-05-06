@@ -830,6 +830,7 @@ if ( ! class_exists( 'Izweb_Import' ) ) :
             $conditions =  array_unique( $results );
             $conditions = implode( ",", $conditions );
             $conditions = explode( ",", $conditions );
+            $conditions = array_map( 'trim', $conditions );
             $json_code = json_encode( $conditions );
             file_put_contents( __IZIPPATH__. '/autocomplete_json.php', $json_code );
         }
